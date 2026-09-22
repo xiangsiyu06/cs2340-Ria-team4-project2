@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+
+{% block title %}My jobs - CareerBridge{% endblock %}
+
+{% block content %}
+<h1>My jobs</h1>
+<a class="button" href="{% url 'jobs:create' %}">Post a job</a>
+
+{% if jobs %}
+    <ul>
+    {% for job in jobs %}
+        <li>
+            <a href="{% url 'jobs:detail' job.pk %}">{{ job.title }}</a>
+            <span class="text-muted"> {{ job.company }} - {{ job.get_status_display }}</span>
+            <a class="button button--ghost button--small" href="{% url 'jobs:edit' job.pk %}">Edit</a>
+        </li>
+    {% endfor %}
+    </ul>
+{% else %}
+    <p class="text-muted">You haven't posted any jobs yet.</p>
+{% endif %}
+{% endblock %}

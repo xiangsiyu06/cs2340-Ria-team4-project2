@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+
+{% block title %}{{ job.title }} - CareerBridge{% endblock %}
+
+{% block content %}
+<h1>{{ job.title }}</h1>
+<p class="text-muted">
+    {{ job.company }} - {{ job.get_remote_type_display }}
+    {% if job.address %} - {{ job.address }}{% endif %}
+</p>
+
+{% if job.salary_min or job.salary_max %}
+    <p>Salary: {{ job.salary_min|default:"-" }} - {{ job.salary_max|default:"-" }}</p>
+{% endif %}
+{% if job.visa_sponsorship %}<p>Visa sponsorship available</p>{% endif %}
+
+{% if job.skill_list %}
+    <p>Skills: {{ job.skill_list|join:", " }}</p>
+{% endif %}
+
+<div>{{ job.description|linebreaks }}</div>
+
+<p class="text-muted">Posted {{ job.created_at|date:"M j, Y" }}</p>
+
+{% if request.user == job.recruiter %}
+    <a class="button button--small" href="{% url 'jobs:edit' job.pk %}">Edit</a>
+{% endif %}
+{% endblock %}
