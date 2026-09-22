@@ -1,8 +1,9 @@
-# Create your views here.
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import redirect, render
 
+from .decorators import role_required
 from .forms import RegistrationForm
+from .models import User
 
 
 def register(request):
@@ -26,3 +27,13 @@ def registration_complete(request):
 @login_required
 def dashboard(request):
     return render(request, "accounts/dashboard.html")
+
+
+@role_required(User.Role.JOB_SEEKER)
+def job_seeker_area(request):
+    return render(request, "accounts/job_seeker_area.html")
+
+
+@role_required(User.Role.RECRUITER)
+def recruiter_area(request):
+    return render(request, "accounts/recruiter_area.html")

@@ -26,4 +26,14 @@ urlpatterns = [
         name="logout",
     ),
     path("dashboard/", views.dashboard, name="dashboard"),
+    path(
+        "job-seeker/",
+        views.job_seeker_area,
+        name="job_seeker_area",
+    ),
+    path(
+        "recruiter/",
+        views.recruiter_area,
+        name="recruiter_area",
+    ),
 ]

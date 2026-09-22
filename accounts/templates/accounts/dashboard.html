@@ -9,6 +9,19 @@
 
     <p>Welcome, {{ request.user.username }}.</p>
     <p>Your role: {{ request.user.get_role_display }}</p>
+    {% if request.user.role == "job_seeker" %}
+    <p>
+        <a href="{% url 'accounts:job_seeker_area' %}">
+            Open Job Seeker Area
+        </a>
+    </p> 
+    {% elif request.user.role == "recruiter" %}
+    <p>
+        <a href="{% url 'accounts:recruiter_area' %}">
+            Open Recruiter Area
+        </a>
+    </p>
+    {% endif %}
 
     <form method="post" action="{% url 'accounts:logout' %}">
         {% csrf_token %}
