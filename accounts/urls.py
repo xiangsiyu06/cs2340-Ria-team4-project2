@@ -36,4 +36,10 @@ urlpatterns = [
         views.recruiter_area,
         name="recruiter_area",
     ),
+    path("reports/", views.reporting, name="reporting"),
+    path(
+        "reports/users.csv",
+        views.export_users_csv,
+        name="export_users_csv",
+    ),
 ]

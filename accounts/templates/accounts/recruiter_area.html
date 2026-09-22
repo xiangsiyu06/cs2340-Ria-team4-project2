@@ -1,12 +1,18 @@
-<!doctype html>
-<html lang="en">
-<head>
-    <meta charset="utf-8">
-    <title>Recruiter Area</title>
-</head>
-<body>
-    <h1>Recruiter Area</h1>
-    <p>This page is available only to recruiters.</p>
-    <a href="{% url 'accounts:dashboard' %}">Dashboard</a>
-</body>
-</html>
+{% extends "base.html" %}
+
+{% block title %}Recruiter area | CareerBridge{% endblock %}
+
+{% block content %}
+<header class="page-heading">
+    <p class="eyebrow">Recruiter workspace</p>
+    <h1>Turn promising applicants into strong hires.</h1>
+    <p class="lead">Job posts, candidates, and hiring activity will come together here.</p>
+</header>
+
+<section class="empty-state" aria-labelledby="recruiter-start-title">
+    <div class="empty-state__icon" aria-hidden="true">R</div>
+    <h2 id="recruiter-start-title">Your workspace is ready</h2>
+    <p>Recruiter features will appear here as the team completes the Sprint 1 stories.</p>
+    <a class="button button--secondary" href="{% url 'accounts:dashboard' %}">Back to dashboard</a>
+</section>
+{% endblock %}

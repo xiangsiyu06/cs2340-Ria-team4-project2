@@ -228,3 +228,16 @@ HANDOFF.md
 PROJECT_CONTEXT.md
 AGENTS.md
 abbc9d8 (start Django project and make user model)
+
+# Local project briefs and personal implementation notes
+2340project2.pdf
+Project2_WorkSplit.docx
+DEVELOPER_3_IMPLEMENTATION_GUIDE.md
+PROJECT_IMPLEMENTATION_GUIDE.md
+
+# Local analysis and preview artifacts
+tmp/
+graphify-out/
+
+# Local editor settings
+.vscode/
