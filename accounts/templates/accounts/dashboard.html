@@ -1,0 +1,18 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Dashboard</title>
+</head>
+<body>
+    <h1>Dashboard</h1>
+
+    <p>Welcome, {{ request.user.username }}.</p>
+    <p>Your role: {{ request.user.get_role_display }}</p>
+
+    <form method="post" action="{% url 'accounts:logout' %}">
+        {% csrf_token %}
+        <button type="submit">Log out</button>
+    </form>
+</body>
+</html>
