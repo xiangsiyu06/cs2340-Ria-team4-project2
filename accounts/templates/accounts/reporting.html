@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+
+{% block title %}Reporting | CareerBridge{% endblock %}
+
+{% block content %}
+<header class="page-heading">
+    <p class="eyebrow">Administrator tools</p>
+    <h1>Platform reporting</h1>
+    <p class="lead">Review account usage at a glance, then download a stable CSV dataset for deeper analysis.</p>
+</header>
+
+<section aria-labelledby="account-overview-title" class="stack stack--large">
+    <div>
+        <h2 id="account-overview-title">Account overview</h2>
+        <p class="text-muted">Counts reflect the current database at the time this page loads.</p>
+    </div>
+
+    <div class="grid grid--4">
+        <article class="card metric">
+            <span class="metric__label">All accounts</span>
+            <strong class="metric__value">{{ account_counts.total }}</strong>
+        </article>
+        <article class="card metric">
+            <span class="metric__label">Job seekers</span>
+            <strong class="metric__value">{{ account_counts.job_seekers }}</strong>
+        </article>
+        <article class="card metric">
+            <span class="metric__label">Recruiters</span>
+            <strong class="metric__value">{{ account_counts.recruiters }}</strong>
+        </article>
+        <article class="card metric">
+            <span class="metric__label">Administrators</span>
+            <strong class="metric__value">{{ account_counts.administrators }}</strong>
+        </article>
+    </div>
+
+    <article class="card download-panel">
+        <div>
+            <span class="badge">CSV</span>
+            <h2>User account report</h2>
+            <p>Includes user ID, username, role, active state, join time, and last-login time. Passwords, permission data, and email addresses are excluded.</p>
+        </div>
+        <a class="button" href="{% url 'accounts:export_users_csv' %}" download>Download CSV</a>
+    </article>
+</section>
+{% endblock %}

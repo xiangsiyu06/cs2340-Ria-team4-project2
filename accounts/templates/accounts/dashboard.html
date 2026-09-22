@@ -1,31 +1,41 @@
-<!doctype html>
-<html lang="en">
-<head>
-    <meta charset="utf-8">
-    <title>Dashboard</title>
-</head>
-<body>
-    <h1>Dashboard</h1>
+{% extends "base.html" %}
 
-    <p>Welcome, {{ request.user.username }}.</p>
-    <p>Your role: {{ request.user.get_role_display }}</p>
-    {% if request.user.role == "job_seeker" %}
-    <p>
-        <a href="{% url 'accounts:job_seeker_area' %}">
-            Open Job Seeker Area
-        </a>
-    </p> 
-    {% elif request.user.role == "recruiter" %}
-    <p>
-        <a href="{% url 'accounts:recruiter_area' %}">
-            Open Recruiter Area
-        </a>
-    </p>
-    {% endif %}
+{% block title %}Dashboard | CareerBridge{% endblock %}
 
-    <form method="post" action="{% url 'accounts:logout' %}">
-        {% csrf_token %}
-        <button type="submit">Log out</button>
-    </form>
-</body>
-</html>
+{% block content %}
+<header class="page-heading">
+    <p class="eyebrow">Your workspace</p>
+    <h1>Welcome back, {{ request.user.first_name|default:request.user.username }}.</h1>
+    <p class="lead">A focused starting point for your next step on CareerBridge.</p>
+</header>
+
+<div class="grid grid--2">
+    <section class="card card--accent stack" aria-labelledby="account-summary-title">
+        <div class="profile-summary">
+            <div class="avatar" aria-hidden="true">{{ request.user.username|first }}</div>
+            <div>
+                <h2 id="account-summary-title">Account summary</h2>
+                <span class="badge">{{ request.user.get_role_display }}</span>
+            </div>
+        </div>
+        <p class="text-muted">Signed in as <strong>{{ request.user.username }}</strong>{% if request.user.email %} &middot; {{ request.user.email }}{% endif %}</p>
+    </section>
+
+    <section class="card stack" aria-labelledby="next-action-title">
+        <div class="card__icon" aria-hidden="true">01</div>
+        <h2 id="next-action-title">Continue your work</h2>
+        {% if request.user.role == "job_seeker" %}
+            <p>Build your presence, explore opportunities, and keep your applications moving.</p>
+            <a class="button" href="{% url 'accounts:job_seeker_area' %}">Open job seeker area</a>
+        {% elif request.user.role == "recruiter" %}
+            <p>Manage hiring activity and connect with candidates from one place.</p>
+            <a class="button" href="{% url 'accounts:recruiter_area' %}">Open recruiter area</a>
+        {% elif request.user.role == "administrator" %}
+            <p>Review platform activity and use administrative reporting tools.</p>
+            <a class="button" href="{% url 'accounts:reporting' %}">Open reporting</a>
+        {% else %}
+            <p>Your account is ready. Contact an administrator if you need a different role.</p>
+        {% endif %}
+    </section>
+</div>
+{% endblock %}

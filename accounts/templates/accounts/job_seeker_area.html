@@ -1,12 +1,18 @@
-<!doctype html>
-<html lang="en">
-<head>
-    <meta charset="utf-8">
-    <title>Job Seeker Area</title>
-</head>
-<body>
-    <h1>Job Seeker Area</h1>
-    <p>This page is available only to job seekers.</p>
-    <a href="{% url 'accounts:dashboard' %}">Dashboard</a>
-</body>
-</html>
+{% extends "base.html" %}
+
+{% block title %}Job seeker area | CareerBridge{% endblock %}
+
+{% block content %}
+<header class="page-heading">
+    <p class="eyebrow">Job seeker workspace</p>
+    <h1>Find the role that fits your direction.</h1>
+    <p class="lead">Your profile, saved opportunities, and applications will come together here.</p>
+</header>
+
+<section class="empty-state" aria-labelledby="job-seeker-start-title">
+    <div class="empty-state__icon" aria-hidden="true">JS</div>
+    <h2 id="job-seeker-start-title">Your workspace is ready</h2>
+    <p>Job-seeker features will appear here as the team completes the Sprint 1 stories.</p>
+    <a class="button button--secondary" href="{% url 'accounts:dashboard' %}">Back to dashboard</a>
+</section>
+{% endblock %}
