@@ -1,5 +1,14 @@
 from django import forms
-from .models import Job
+from .models import Application, Job
+
+
+class ApplicationForm(forms.ModelForm):
+    class Meta:
+        model = Application
+        fields = ["note"]
+        labels = {"note": "Personalized note (optional)"}
+        help_texts = {"note": "Tell the hiring team why this role fits you. Up to 2,000 characters."}
+        widgets = {"note": forms.Textarea(attrs={"rows": 4, "maxlength": 2000})}
 
 
 class JobForm(forms.ModelForm):

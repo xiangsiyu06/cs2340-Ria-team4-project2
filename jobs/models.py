@@ -51,3 +51,24 @@ class Job(models.Model):
 
     def skill_list(self):
         return [s.strip() for s in self.skills.split(",") if s.strip()]
+
+
+class Application(models.Model):
+    job = models.ForeignKey(Job, on_delete=models.CASCADE, related_name="applications")
+    applicant = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="applications",
+    )
+    note = models.TextField(blank=True, max_length=2000)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["job", "applicant"], name="unique_job_application"
+            ),
+        ]
+
+    def __str__(self):
+        return f"{self.applicant} applied to {self.job}"

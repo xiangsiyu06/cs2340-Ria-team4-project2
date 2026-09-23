@@ -1,12 +1,15 @@
 from functools import wraps
 
+from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponseForbidden
 from django.shortcuts import get_object_or_404, redirect, render
+from django.views.decorators.http import require_POST
 
+from accounts.decorators import role_required
 from accounts.models import User
-from .forms import JobForm
-from .models import Job
+from .forms import ApplicationForm, JobForm
+from .models import Application, Job
 
 
 def recruiter_required(view_func):
@@ -54,4 +57,37 @@ def my_jobs(request):
 
 def job_detail(request, pk):
     job = get_object_or_404(Job, pk=pk, status=Job.Status.ACTIVE)
-    return render(request, "jobs/job_detail.html", {"job": job})
+    application = None
+    if request.user.is_authenticated and request.user.role == User.Role.JOB_SEEKER:
+        application = Application.objects.filter(job=job, applicant=request.user).first()
+    return render(request, "jobs/job_detail.html", {
+        "job": job,
+        "application": application,
+        "application_form": ApplicationForm(),
+    })
+
+
+@role_required(User.Role.JOB_SEEKER)
+@require_POST
+def job_apply(request, pk):
+    job = get_object_or_404(Job, pk=pk, status=Job.Status.ACTIVE)
+    if Application.objects.filter(job=job, applicant=request.user).exists():
+        messages.info(request, "You have already applied to this job.")
+        return redirect("jobs:detail", pk=job.pk)
+
+    form = ApplicationForm(request.POST)
+    if not form.is_valid():
+        return render(request, "jobs/job_detail.html", {
+            "job": job,
+            "application_form": form,
+        })
+
+    # The database constraint also protects against simultaneous submissions.
+    application, created = Application.objects.get_or_create(
+        job=job, applicant=request.user, defaults={"note": form.cleaned_data["note"]}
+    )
+    if created:
+        messages.success(request, "Your application has been submitted.")
+    else:
+        messages.info(request, "You have already applied to this job.")
+    return redirect("jobs:detail", pk=job.pk)

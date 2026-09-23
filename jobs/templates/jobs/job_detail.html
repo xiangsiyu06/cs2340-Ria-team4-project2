@@ -25,4 +25,27 @@
 {% if request.user == job.recruiter %}
     <a class="button button--small" href="{% url 'jobs:edit' job.pk %}">Edit</a>
 {% endif %}
+
+{% if request.user.is_authenticated and request.user.role == 'job_seeker' %}
+    <section class="card" aria-labelledby="application-heading">
+        {% if application %}
+            <h2 id="application-heading">Application submitted</h2>
+            <p>You applied on {{ application.created_at|date:"M j, Y" }}.</p>
+            {% if application.note %}
+                <h3>Your personalized note</h3>
+                {{ application.note|linebreaks }}
+            {% endif %}
+        {% else %}
+            <h2 id="application-heading">Apply to this job</h2>
+            <p>Apply with one click, or add a personalized note first.</p>
+            <form method="post" action="{% url 'jobs:apply' job.pk %}">
+                {% csrf_token %}
+                {% include "components/form_field.html" with field=application_form.note %}
+                <button class="button" type="submit">Apply now</button>
+            </form>
+        {% endif %}
+    </section>
+{% elif not request.user.is_authenticated %}
+    <p><a class="button" href="{% url 'accounts:login' %}?next={{ request.path|urlencode }}">Log in to apply</a></p>
+{% endif %}
 {% endblock %}
