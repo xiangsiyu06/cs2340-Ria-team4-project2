@@ -1,7 +1,7 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
 
-from .models import Education, JobSeekerProfile, User
+from .models import Education, JobSeekerProfile, User, WorkExperience
 
 
 class RegistrationForm(UserCreationForm):
@@ -45,6 +45,23 @@ class EducationForm(forms.ModelForm):
             "end_date",
         )
         widgets = {
+            "start_date": forms.DateInput(attrs={"type": "date"}),
+            "end_date": forms.DateInput(attrs={"type": "date"}),
+        }
+
+
+class WorkExperienceForm(forms.ModelForm):
+    class Meta:
+        model = WorkExperience
+        fields = (
+            "company",
+            "title",
+            "description",
+            "start_date",
+            "end_date",
+        )
+        widgets = {
+            "description": forms.Textarea(attrs={"rows": 4}),
             "start_date": forms.DateInput(attrs={"type": "date"}),
             "end_date": forms.DateInput(attrs={"type": "date"}),
         }

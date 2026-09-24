@@ -56,4 +56,39 @@
         <p>Create your basic profile before adding education.</p>
     {% endif %}
 </section>
+<section class="card">
+    <h2>Work experience</h2>
+
+    {% if profile %}
+        <a
+            class="button button--small"
+            href="{% url 'accounts:add_work_experience' %}"
+        >
+            Add work experience
+        </a>
+
+        {% for experience in work_experiences %}
+            <article>
+                <h3>{{ experience.title }}</h3>
+                <p>{{ experience.company }}</p>
+
+                {% if experience.start_date or experience.end_date %}
+                    <p class="text-muted">
+                        {{ experience.start_date|default:"Start date not provided" }}
+                        –
+                        {{ experience.end_date|default:"Present" }}
+                    </p>
+                {% endif %}
+
+                {% if experience.description %}
+                    <p>{{ experience.description|linebreaksbr }}</p>
+                {% endif %}
+            </article>
+        {% empty %}
+            <p>No work experience added yet.</p>
+        {% endfor %}
+    {% else %}
+        <p>Create your basic profile before adding work experience.</p>
+    {% endif %}
+</section>
 {% endblock %}

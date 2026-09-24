@@ -62,4 +62,9 @@ urlpatterns = [
         views.add_education,
         name="add_education",
     ),
+    path(
+        "job-seeker/profile/work-experience/add/",
+        views.add_work_experience,
+        name="add_work_experience",
+    ),
 ]
