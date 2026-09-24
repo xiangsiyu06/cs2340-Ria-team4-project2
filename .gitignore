@@ -227,6 +227,7 @@ db.sqlite3
 HANDOFF.md
 PROJECT_CONTEXT.md
 AGENTS.md
+context/
 abbc9d8 (start Django project and make user model)
 
 # Local project briefs and personal implementation notes

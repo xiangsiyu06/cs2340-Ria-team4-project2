@@ -47,4 +47,14 @@ urlpatterns = [
         views.edit_job_seeker_profile,
         name="edit_job_seeker_profile",
     ),
+    path(
+        "reports/jobs.csv",
+        views.export_jobs_csv,
+        name="export_jobs_csv",
+    ),
+    path(
+        "reports/applications.csv",
+        views.export_applications_csv,
+        name="export_applications_csv",
+    ),
 ]

@@ -3,6 +3,7 @@ import io
 
 from django.test import TestCase
 from django.urls import reverse
+from jobs.models import Application, Job
 
 from .models import User
 
@@ -80,19 +81,43 @@ class AdministratorCsvExportTests(TestCase):
             password="test-password-123",
             role=User.Role.RECRUITER,
         )
+        self.job = Job.objects.create(
+            recruiter=self.recruiter,
+            title="=Spreadsheet Developer",
+            company="CareerBridge",
+            description="Build reporting tools.",
+            remote_type=Job.RemoteType.HYBRID,
+        )
+        self.application = Application.objects.create(
+            job=self.job,
+            applicant=self.job_seeker,
+            note="Private candidate note",
+        )
 
     def test_anonymous_user_is_redirected_to_login(self):
-        response = self.client.get(reverse("accounts:export_users_csv"))
+        for route_name in (
+            "export_users_csv",
+            "export_jobs_csv",
+            "export_applications_csv",
+        ):
+            with self.subTest(route_name=route_name):
+                report_url = reverse(f"accounts:{route_name}")
+                response = self.client.get(report_url)
 
-        self.assertRedirects(
-            response,
-            f'{reverse("accounts:login")}?next={reverse("accounts:export_users_csv")}',
-        )
+                self.assertRedirects(
+                    response,
+                    f'{reverse("accounts:login")}?next={report_url}',
+                )
 
     def test_non_administrator_receives_permission_denied(self):
         self.client.force_login(self.recruiter)
 
-        for route_name in ("reporting", "export_users_csv"):
+        for route_name in (
+            "reporting",
+            "export_users_csv",
+            "export_jobs_csv",
+            "export_applications_csv",
+        ):
             with self.subTest(route_name=route_name):
                 response = self.client.get(reverse(f"accounts:{route_name}"))
 
@@ -108,7 +133,13 @@ class AdministratorCsvExportTests(TestCase):
         self.assertEqual(response.context["account_counts"]["job_seekers"], 1)
         self.assertEqual(response.context["account_counts"]["recruiters"], 1)
         self.assertEqual(response.context["account_counts"]["administrators"], 1)
+        self.assertEqual(response.context["job_counts"]["total"], 1)
+        self.assertEqual(response.context["job_counts"]["active"], 1)
+        self.assertEqual(response.context["job_counts"]["removed"], 0)
+        self.assertEqual(response.context["application_count"], 1)
         self.assertContains(response, reverse("accounts:export_users_csv"))
+        self.assertContains(response, reverse("accounts:export_jobs_csv"))
+        self.assertContains(response, reverse("accounts:export_applications_csv"))
 
     def test_csv_has_download_headers_and_stable_columns(self):
         self.client.force_login(self.administrator)
@@ -160,3 +191,53 @@ class AdministratorCsvExportTests(TestCase):
         rows = list(csv.reader(io.StringIO(response.content.decode("utf-8"))))
 
         self.assertEqual(rows[-1][1], "'@dangerous")
+
+    def test_job_csv_has_stable_privacy_conscious_columns(self):
+        self.client.force_login(self.administrator)
+
+        response = self.client.get(reverse("accounts:export_jobs_csv"))
+        rows = list(csv.reader(io.StringIO(response.content.decode("utf-8"))))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertRegex(
+            response["Content-Disposition"],
+            r'^attachment; filename="careerbridge-job-report-\d{4}-\d{2}-\d{2}\.csv"$',
+        )
+        self.assertEqual(
+            rows[0],
+            [
+                "job_id",
+                "title",
+                "company",
+                "recruiter_username",
+                "remote_type",
+                "status",
+                "created_at",
+            ],
+        )
+        self.assertEqual(rows[1][1], "'=Spreadsheet Developer")
+        self.assertEqual(rows[1][2:6], ["CareerBridge", "recruiter", "hybrid", "active"])
+
+    def test_application_csv_excludes_private_content(self):
+        self.client.force_login(self.administrator)
+
+        response = self.client.get(reverse("accounts:export_applications_csv"))
+        rows = list(csv.reader(io.StringIO(response.content.decode("utf-8"))))
+        csv_text = response.content.decode("utf-8")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            rows[0],
+            [
+                "application_id",
+                "job_id",
+                "job_title",
+                "company",
+                "applicant_username",
+                "created_at",
+            ],
+        )
+        self.assertEqual(rows[1][2], "'=Spreadsheet Developer")
+        self.assertEqual(rows[1][4], "job-seeker")
+        self.assertNotIn("Private candidate note", csv_text)
+        self.assertNotIn("private@example.com", csv_text)
