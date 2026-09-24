@@ -10,4 +10,7 @@ urlpatterns = [
     path("<int:pk>/apply/", views.job_apply, name="apply"),
     path("<int:pk>/edit/", views.job_edit, name="edit"),
     path("", views.job_search, name="search"),
+    path("moderation/", views.moderation_list, name="moderation"),
+    path("<int:pk>/remove/", views.job_remove, name="remove"),
+    path("<int:pk>/restore/", views.job_restore, name="restore"),
 ]
