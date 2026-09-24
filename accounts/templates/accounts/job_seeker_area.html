@@ -20,4 +20,40 @@
    href="{% url 'accounts:dashboard' %}">
     Back to dashboard
 </a>
+<section class="card">
+    <h2>Education</h2>
+
+    {% if profile %}
+        <a class="button button--small"
+           href="{% url 'accounts:add_education' %}">
+            Add education
+        </a>
+
+        {% for education in education_records %}
+            <article>
+                <h3>{{ education.institution }}</h3>
+
+                {% if education.degree or education.field_of_study %}
+                    <p>
+                        {{ education.degree }}
+                        {% if education.degree and education.field_of_study %}—{% endif %}
+                        {{ education.field_of_study }}
+                    </p>
+                {% endif %}
+
+                {% if education.start_date or education.end_date %}
+                    <p class="text-muted">
+                        {{ education.start_date|default:"Start date not provided" }}
+                        –
+                        {{ education.end_date|default:"Present" }}
+                    </p>
+                {% endif %}
+            </article>
+        {% empty %}
+            <p>No education records added yet.</p>
+        {% endfor %}
+    {% else %}
+        <p>Create your basic profile before adding education.</p>
+    {% endif %}
+</section>
 {% endblock %}

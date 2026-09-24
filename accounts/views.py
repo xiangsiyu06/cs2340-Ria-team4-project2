@@ -9,8 +9,8 @@ from django.utils import timezone
 from jobs.models import Application, Job
 
 from .decorators import role_required
-from .forms import JobSeekerProfileForm, RegistrationForm
-from .models import JobSeekerProfile, User
+from .forms import EducationForm, JobSeekerProfileForm, RegistrationForm
+from .models import Education, JobSeekerProfile, User
 
 
 def register(request):
@@ -38,7 +38,22 @@ def dashboard(request):
 
 @role_required(User.Role.JOB_SEEKER)
 def job_seeker_area(request):
-    return render(request, "accounts/job_seeker_area.html")
+    profile = JobSeekerProfile.objects.filter(user=request.user).first()
+
+    if profile:
+        education_records = profile.education_records.all()
+    else:
+        education_records = Education.objects.none()
+
+    return render(
+        request,
+        "accounts/job_seeker_area.html",
+        {
+            "profile": profile,
+            "education_records": education_records,
+        },
+    )
+
 
 
 @role_required(User.Role.JOB_SEEKER)
@@ -233,3 +248,28 @@ def export_applications_csv(request):
         )
 
     return response
+
+
+@role_required(User.Role.JOB_SEEKER)
+def add_education(request):
+    profile = JobSeekerProfile.objects.filter(user=request.user).first()
+
+    if profile is None:
+        messages.info(request, "Create your profile before adding education.")
+        return redirect("accounts:edit_job_seeker_profile")
+
+    form = EducationForm(request.POST or None)
+
+    if request.method == "POST" and form.is_valid():
+        education = form.save(commit=False)
+        education.profile = profile
+        education.save()
+
+        messages.success(request, "Education record added.")
+        return redirect("accounts:job_seeker_area")
+
+    return render(
+        request,
+        "accounts/education_form.html",
+        {"form": form},
+    )
