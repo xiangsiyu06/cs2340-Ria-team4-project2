@@ -91,4 +91,35 @@
         <p>Create your basic profile before adding work experience.</p>
     {% endif %}
 </section>
+<section class="card">
+    <h2>Professional links</h2>
+
+    {% if profile %}
+        <a
+            class="button button--small"
+            href="{% url 'accounts:add_professional_link' %}"
+        >
+            Add professional link
+        </a>
+
+        {% for link in professional_links %}
+            <article>
+                <h3>{{ link.label }}</h3>
+                <p>
+                    <a
+                        href="{{ link.url }}"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                    >
+                        {{ link.url }}
+                    </a>
+                </p>
+            </article>
+        {% empty %}
+            <p>No professional links added yet.</p>
+        {% endfor %}
+    {% else %}
+        <p>Create your basic profile before adding professional links.</p>
+    {% endif %}
+</section>
 {% endblock %}

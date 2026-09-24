@@ -14,8 +14,15 @@ from .forms import (
     JobSeekerProfileForm,
     RegistrationForm,
     WorkExperienceForm,
+    ProfessionalLinkForm,
 )
-from .models import Education, JobSeekerProfile, User, WorkExperience
+from .models import (
+    Education,
+    JobSeekerProfile,
+    ProfessionalLink,
+    User,
+    WorkExperience,
+)
 
 
 def register(request):
@@ -48,9 +55,11 @@ def job_seeker_area(request):
     if profile:
         education_records = profile.education_records.all()
         work_experiences = profile.work_experiences.all()
+        professional_links = profile.professional_links.all()
     else:
         education_records = Education.objects.none()
         work_experiences = WorkExperience.objects.none()
+        professional_links = ProfessionalLink.objects.none()
 
     return render(
         request,
@@ -59,9 +68,9 @@ def job_seeker_area(request):
             "profile": profile,
             "education_records": education_records,
             "work_experiences": work_experiences,
+            "professional_links": professional_links,
         },
     )
-
 
 
 @role_required(User.Role.JOB_SEEKER)
@@ -307,5 +316,32 @@ def add_work_experience(request):
     return render(
         request,
         "accounts/work_experience_form.html",
+        {"form": form},
+    )
+
+@role_required(User.Role.JOB_SEEKER)
+def add_professional_link(request):
+    profile = JobSeekerProfile.objects.filter(user=request.user).first()
+
+    if profile is None:
+        messages.info(
+            request,
+            "Create your profile before adding professional links.",
+        )
+        return redirect("accounts:edit_job_seeker_profile")
+
+    form = ProfessionalLinkForm(request.POST or None)
+
+    if request.method == "POST" and form.is_valid():
+        professional_link = form.save(commit=False)
+        professional_link.profile = profile
+        professional_link.save()
+
+        messages.success(request, "Professional link added.")
+        return redirect("accounts:job_seeker_area")
+
+    return render(
+        request,
+        "accounts/professional_link_form.html",
         {"form": form},
     )

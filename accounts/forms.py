@@ -1,7 +1,13 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
 
-from .models import Education, JobSeekerProfile, User, WorkExperience
+from .models import (
+    Education,
+    JobSeekerProfile,
+    ProfessionalLink,
+    User,
+    WorkExperience,
+)
 
 
 class RegistrationForm(UserCreationForm):
@@ -64,4 +70,18 @@ class WorkExperienceForm(forms.ModelForm):
             "description": forms.Textarea(attrs={"rows": 4}),
             "start_date": forms.DateInput(attrs={"type": "date"}),
             "end_date": forms.DateInput(attrs={"type": "date"}),
+        }
+
+
+class ProfessionalLinkForm(forms.ModelForm):
+    class Meta:
+        model = ProfessionalLink
+        fields = ("label", "url")
+        widgets = {
+            "label": forms.TextInput(
+                attrs={"placeholder": "e.g. LinkedIn or GitHub"}
+            ),
+            "url": forms.URLInput(
+                attrs={"placeholder": "https://example.com"}
+            ),
         }
