@@ -1,3 +1,4 @@
+import re
 from functools import wraps
 
 from django.contrib import messages
@@ -10,6 +11,8 @@ from accounts.decorators import role_required
 from accounts.models import User
 from .forms import ApplicationForm, JobForm
 from .models import Application, Job
+from django.db.models import Q
+from .forms import JobForm, JobSearchForm
 
 
 def recruiter_required(view_func):
@@ -91,3 +94,44 @@ def job_apply(request, pk):
     else:
         messages.info(request, "You have already applied to this job.")
     return redirect("jobs:detail", pk=job.pk)
+
+@login_required
+def job_search(request):
+    form = JobSearchForm(request.GET or None)
+    jobs = Job.objects.filter(status=Job.Status.ACTIVE)
+
+    if form.is_valid():
+        data = form.cleaned_data
+
+        if data["title"]:
+            jobs = jobs.filter(title__icontains=data["title"])
+
+        for skill in data["skills"].split(","):
+            skill = skill.strip()
+            if skill:
+                pattern = r"(^|,)\s*" + re.escape(skill) + r"\s*(,|$)"
+                jobs = jobs.filter(skills__iregex=pattern)
+
+        if data["location"]:
+            jobs = jobs.filter(address__icontains=data["location"])
+
+        lo, hi = data["salary_min"], data["salary_max"]
+        if lo is not None:
+            jobs = jobs.filter(
+                Q(salary_max__gte=lo) | Q(salary_max__isnull=True, salary_min__isnull=False)
+            )
+        if hi is not None:
+            jobs = jobs.filter(
+                Q(salary_min__lte=hi) | Q(salary_min__isnull=True, salary_max__isnull=False)
+            )
+
+        if data["remote_type"]:
+            jobs = jobs.filter(remote_type=data["remote_type"])
+
+        if data["visa_sponsorship"]:
+            jobs = jobs.filter(visa_sponsorship=True)
+
+    elif form.is_bound:
+        jobs = jobs.none()
+
+    return render(request, "jobs/job_search.html", {"form": form, "jobs": jobs})
