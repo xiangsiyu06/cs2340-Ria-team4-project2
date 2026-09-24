@@ -9,10 +9,15 @@
     <p class="lead">Your profile, saved opportunities, and applications will come together here.</p>
 </header>
 
-<section class="empty-state" aria-labelledby="job-seeker-start-title">
-    <div class="empty-state__icon" aria-hidden="true">JS</div>
-    <h2 id="job-seeker-start-title">Your workspace is ready</h2>
-    <p>Job-seeker features will appear here as the team completes the Sprint 1 stories.</p>
-    <a class="button button--secondary" href="{% url 'accounts:dashboard' %}">Back to dashboard</a>
-</section>
+<p>Start by adding your headline, skills, and location.</p>
+
+<a class="button"
+   href="{% url 'accounts:edit_job_seeker_profile' %}">
+    Create or edit profile
+</a>
+
+<a class="button button--secondary"
+   href="{% url 'accounts:dashboard' %}">
+    Back to dashboard
+</a>
 {% endblock %}

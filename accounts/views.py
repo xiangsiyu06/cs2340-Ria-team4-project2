@@ -1,5 +1,5 @@
 import csv
-
+from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.db.models import Count, Q
 from django.http import HttpResponse
@@ -7,8 +7,8 @@ from django.shortcuts import redirect, render
 from django.utils import timezone
 
 from .decorators import role_required
-from .forms import RegistrationForm
-from .models import User
+from .forms import JobSeekerProfileForm, RegistrationForm
+from .models import JobSeekerProfile, User
 
 
 def register(request):
@@ -37,6 +37,29 @@ def dashboard(request):
 @role_required(User.Role.JOB_SEEKER)
 def job_seeker_area(request):
     return render(request, "accounts/job_seeker_area.html")
+
+@role_required(User.Role.JOB_SEEKER)
+def edit_job_seeker_profile(request):
+    profile = JobSeekerProfile.objects.filter(user=request.user).first()
+
+    form = JobSeekerProfileForm(
+        request.POST or None,
+        instance=profile,
+    )
+
+    if request.method == "POST" and form.is_valid():
+        profile = form.save(commit=False)
+        profile.user = request.user
+        profile.save()
+
+        messages.success(request, "Your profile has been saved.")
+        return redirect("accounts:job_seeker_area")
+
+    return render(
+        request,
+        "accounts/profile_form.html",
+        {"form": form},
+    )
 
 
 @role_required(User.Role.RECRUITER)

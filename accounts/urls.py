@@ -42,4 +42,9 @@ urlpatterns = [
         views.export_users_csv,
         name="export_users_csv",
     ),
+    path(
+        "job-seeker/profile/",
+        views.edit_job_seeker_profile,
+        name="edit_job_seeker_profile",
+    ),
 ]
