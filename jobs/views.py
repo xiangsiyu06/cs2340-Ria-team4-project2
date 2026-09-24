@@ -1,28 +1,19 @@
 import re
-from functools import wraps
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.http import HttpResponseForbidden
+from django.db.models import Q
+from django.http import Http404, HttpResponseForbidden
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_POST
 
 from accounts.decorators import role_required
 from accounts.models import User
-from .forms import ApplicationForm, JobForm
+from .forms import ApplicationForm, JobForm, JobSearchForm
 from .models import Application, Job
-from django.db.models import Q
-from .forms import JobForm, JobSearchForm
 
-
-def recruiter_required(view_func):
-    @wraps(view_func)
-    @login_required
-    def wrapper(request, *args, **kwargs):
-        if request.user.role != User.Role.RECRUITER:
-            return HttpResponseForbidden("Recruiters only.")
-        return view_func(request, *args, **kwargs)
-    return wrapper
+recruiter_required = role_required(User.Role.RECRUITER)
+admin_required = role_required(User.Role.ADMINISTRATOR)
 
 
 @recruiter_required
@@ -59,7 +50,15 @@ def my_jobs(request):
 
 
 def job_detail(request, pk):
-    job = get_object_or_404(Job, pk=pk, status=Job.Status.ACTIVE)
+    job = get_object_or_404(Job, pk=pk)
+    if job.status == Job.Status.REMOVED:
+        user = request.user
+        can_see = user.is_authenticated and (
+            user == job.recruiter or user.role == User.Role.ADMINISTRATOR
+        )
+        if not can_see:
+            raise Http404
+
     application = None
     if request.user.is_authenticated and request.user.role == User.Role.JOB_SEEKER:
         application = Application.objects.filter(job=job, applicant=request.user).first()
@@ -133,5 +132,33 @@ def job_search(request):
 
     elif form.is_bound:
         jobs = jobs.none()
-
     return render(request, "jobs/job_search.html", {"form": form, "jobs": jobs})
+
+
+@admin_required
+def moderation_list(request):
+    status = request.GET.get("status", "")
+    jobs = Job.objects.select_related("recruiter")
+    if status in Job.Status.values:
+        jobs = jobs.filter(status=status)
+    return render(request, "jobs/moderation.html", {"jobs": jobs, "status": status})
+
+
+@require_POST
+@admin_required
+def job_remove(request, pk):
+    job = get_object_or_404(Job, pk=pk)
+    job.status = Job.Status.REMOVED
+    job.save(update_fields=["status"])
+    messages.success(request, f'Removed "{job.title}".')
+    return redirect("jobs:moderation")
+
+
+@require_POST
+@admin_required
+def job_restore(request, pk):
+    job = get_object_or_404(Job, pk=pk)
+    job.status = Job.Status.ACTIVE
+    job.save(update_fields=["status"])
+    messages.success(request, f'Restored "{job.title}".')
+    return redirect("jobs:moderation")
