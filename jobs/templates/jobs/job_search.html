@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block title %}Find jobs - CareerBridge{% endblock %}
+
+{% block content %}
+<h1>Find jobs</h1>
+
+<form method="get" novalidate>
+    {% for field in form %}
+        {% include "components/form_field.html" with field=field %}
+    {% endfor %}
+    <div>
+        <button class="button" type="submit">Search</button>
+        <a class="button button--ghost" href="{% url 'jobs:search' %}">Clear</a>
+    </div>
+</form>
+
+{% if form.errors %}
+    <p class="alert alert--error">Please fix the filters above.</p>
+{% else %}
+    <p class="text-muted">{{ jobs|length }} job{{ jobs|length|pluralize }} found</p>
+
+    {% if jobs %}
+        <ul>
+        {% for job in jobs %}
+            <li>
+                <a href="{% url 'jobs:detail' job.pk %}">{{ job.title }}</a>
+                <span class="text-muted">
+                    - {{ job.company }} - {{ job.get_remote_type_display }}
+                    {% if job.address %} - {{ job.address }}{% endif %}
+                    {% if job.salary_min or job.salary_max %}
+                        - {{ job.salary_min|default:"-" }}-{{ job.salary_max|default:"-" }}
+                    {% endif %}
+                    {% if job.visa_sponsorship %} - Visa sponsorship{% endif %}
+                </span>
+            </li>
+        {% endfor %}
+        </ul>
+    {% else %}
+        <p>No jobs match these filters.</p>
+    {% endif %}
+{% endif %}
+{% endblock %}
