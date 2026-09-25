@@ -11,6 +11,12 @@ class ApplicationForm(forms.ModelForm):
         widgets = {"note": forms.Textarea(attrs={"rows": 4, "maxlength": 2000})}
 
 
+class ApplicationStatusForm(forms.ModelForm):
+    class Meta:
+        model = Application
+        fields = ["status"]
+
+
 class JobForm(forms.ModelForm):
     class Meta:
         model = Job

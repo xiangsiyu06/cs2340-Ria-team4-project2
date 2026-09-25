@@ -27,6 +27,7 @@
 
 {% if request.user == job.recruiter %}
     <a class="button button--small" href="{% url 'jobs:edit' job.pk %}">Edit</a>
+    <a class="button button--secondary button--small" href="{% url 'jobs:job_applications' job.pk %}">View applicants</a>
 {% endif %}
 
 {% if request.user.is_authenticated and request.user.role == 'job_seeker' %}
@@ -34,6 +35,8 @@
         {% if application %}
             <h2 id="application-heading">Application submitted</h2>
             <p>You applied on {{ application.created_at|date:"M j, Y" }}.</p>
+            <p>Status: <span class="badge">{{ application.get_status_display }}</span></p>
+            <p><a href="{% url 'jobs:my_applications' %}">Track my applications</a></p>
             {% if application.note %}
                 <h3>Your personalized note</h3>
                 {{ application.note|linebreaks }}

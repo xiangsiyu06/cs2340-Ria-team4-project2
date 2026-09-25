@@ -13,6 +13,7 @@
             <a href="{% url 'jobs:detail' job.pk %}">{{ job.title }}</a>
             <span class="text-muted"> {{ job.company }} - {{ job.get_status_display }}</span>
             <a class="button button--ghost button--small" href="{% url 'jobs:edit' job.pk %}">Edit</a>
+            <a class="button button--secondary button--small" href="{% url 'jobs:job_applications' job.pk %}">View applicants</a>
         </li>
     {% endfor %}
     </ul>

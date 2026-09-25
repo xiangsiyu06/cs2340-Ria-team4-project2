@@ -8,12 +8,70 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_POST
 
 from accounts.decorators import role_required
-from accounts.models import User
-from .forms import ApplicationForm, JobForm, JobSearchForm
+from accounts.models import JobSeekerProfile, User
+from .forms import ApplicationForm, ApplicationStatusForm, JobForm, JobSearchForm
 from .models import Application, Job
 
 recruiter_required = role_required(User.Role.RECRUITER)
 admin_required = role_required(User.Role.ADMINISTRATOR)
+
+
+@role_required(User.Role.JOB_SEEKER)
+def my_applications(request):
+    applications = (
+        Application.objects.filter(applicant=request.user)
+        .select_related("job")
+        .order_by("-created_at", "-pk")
+    )
+    return render(request, "jobs/my_applications.html", {"applications": applications})
+
+
+@recruiter_required
+def job_applications(request, pk):
+    job = get_object_or_404(Job, pk=pk, recruiter=request.user)
+    applications = job.applications.select_related("applicant").order_by("-created_at", "-pk")
+    return render(request, "jobs/job_applications.html", {
+        "job": job, "applications": applications,
+    })
+
+
+def _application_review_context(application, status_form):
+    profile = (
+        JobSeekerProfile.objects.filter(user=application.applicant)
+        .prefetch_related("education_records", "work_experiences", "professional_links")
+        .first()
+    )
+    return {"application": application, "profile": profile, "status_form": status_form}
+
+
+@recruiter_required
+def application_detail(request, pk):
+    application = get_object_or_404(
+        Application.objects.select_related("job", "applicant"),
+        pk=pk, job__recruiter=request.user,
+    )
+    return render(request, "jobs/application_detail.html", _application_review_context(
+        application, ApplicationStatusForm(instance=application),
+    ))
+
+
+@recruiter_required
+@require_POST
+def application_status(request, pk):
+    application = get_object_or_404(
+        Application.objects.select_related("job", "applicant"),
+        pk=pk, job__recruiter=request.user,
+    )
+    form = ApplicationStatusForm(request.POST, instance=application)
+    if form.is_valid():
+        # Only update the stage; never overwrite the applicant's submitted note.
+        application.status = form.cleaned_data["status"]
+        application.save(update_fields=["status"])
+        messages.success(request, "Application status updated.")
+        return redirect("jobs:application_detail", pk=application.pk)
+    return render(request, "jobs/application_detail.html", _application_review_context(
+        application, form,
+    ))
 
 
 @recruiter_required
