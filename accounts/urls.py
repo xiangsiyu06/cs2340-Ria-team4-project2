@@ -63,13 +63,43 @@ urlpatterns = [
         name="add_education",
     ),
     path(
+        "job-seeker/profile/education/<int:pk>/edit/",
+        views.edit_education,
+        name="edit_education",
+    ),
+    path(
+        "job-seeker/profile/education/<int:pk>/delete/",
+        views.delete_education,
+        name="delete_education",
+    ),
+    path(
         "job-seeker/profile/work-experience/add/",
         views.add_work_experience,
         name="add_work_experience",
     ),
     path(
+        "job-seeker/profile/work-experience/<int:pk>/edit/",
+        views.edit_work_experience,
+        name="edit_work_experience",
+    ),
+    path(
+        "job-seeker/profile/work-experience/<int:pk>/delete/",
+        views.delete_work_experience,
+        name="delete_work_experience",
+    ),
+    path(
         "job-seeker/profile/links/add/",
         views.add_professional_link,
         name="add_professional_link",
+    ),
+    path(
+        "job-seeker/profile/links/<int:pk>/edit/",
+        views.edit_professional_link,
+        name="edit_professional_link",
+    ),
+    path(
+        "job-seeker/profile/links/<int:pk>/delete/",
+        views.delete_professional_link,
+        name="delete_professional_link",
     ),
 ]

@@ -4,8 +4,9 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.db.models import Count, Q
 from django.http import HttpResponse
-from django.shortcuts import redirect, render
+from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
+from django.views.decorators.http import require_POST
 from jobs.models import Application, Job
 
 from .decorators import role_required
@@ -288,8 +289,42 @@ def add_education(request):
     return render(
         request,
         "accounts/education_form.html",
-        {"form": form},
+        {"form": form, "is_editing": False},
     )
+
+
+@role_required(User.Role.JOB_SEEKER)
+def edit_education(request, pk):
+    education = get_object_or_404(
+        Education,
+        pk=pk,
+        profile__user=request.user,
+    )
+    form = EducationForm(request.POST or None, instance=education)
+
+    if request.method == "POST" and form.is_valid():
+        form.save()
+        messages.success(request, "Education record updated.")
+        return redirect("accounts:job_seeker_area")
+
+    return render(
+        request,
+        "accounts/education_form.html",
+        {"form": form, "is_editing": True},
+    )
+
+
+@role_required(User.Role.JOB_SEEKER)
+@require_POST
+def delete_education(request, pk):
+    education = get_object_or_404(
+        Education,
+        pk=pk,
+        profile__user=request.user,
+    )
+    education.delete()
+    messages.success(request, "Education record deleted.")
+    return redirect("accounts:job_seeker_area")
 
 
 @role_required(User.Role.JOB_SEEKER)
@@ -316,8 +351,42 @@ def add_work_experience(request):
     return render(
         request,
         "accounts/work_experience_form.html",
-        {"form": form},
+        {"form": form, "is_editing": False},
     )
+
+
+@role_required(User.Role.JOB_SEEKER)
+def edit_work_experience(request, pk):
+    work_experience = get_object_or_404(
+        WorkExperience,
+        pk=pk,
+        profile__user=request.user,
+    )
+    form = WorkExperienceForm(request.POST or None, instance=work_experience)
+
+    if request.method == "POST" and form.is_valid():
+        form.save()
+        messages.success(request, "Work experience updated.")
+        return redirect("accounts:job_seeker_area")
+
+    return render(
+        request,
+        "accounts/work_experience_form.html",
+        {"form": form, "is_editing": True},
+    )
+
+
+@role_required(User.Role.JOB_SEEKER)
+@require_POST
+def delete_work_experience(request, pk):
+    work_experience = get_object_or_404(
+        WorkExperience,
+        pk=pk,
+        profile__user=request.user,
+    )
+    work_experience.delete()
+    messages.success(request, "Work experience deleted.")
+    return redirect("accounts:job_seeker_area")
 
 @role_required(User.Role.JOB_SEEKER)
 def add_professional_link(request):
@@ -343,5 +412,39 @@ def add_professional_link(request):
     return render(
         request,
         "accounts/professional_link_form.html",
-        {"form": form},
+        {"form": form, "is_editing": False},
     )
+
+
+@role_required(User.Role.JOB_SEEKER)
+def edit_professional_link(request, pk):
+    professional_link = get_object_or_404(
+        ProfessionalLink,
+        pk=pk,
+        profile__user=request.user,
+    )
+    form = ProfessionalLinkForm(request.POST or None, instance=professional_link)
+
+    if request.method == "POST" and form.is_valid():
+        form.save()
+        messages.success(request, "Professional link updated.")
+        return redirect("accounts:job_seeker_area")
+
+    return render(
+        request,
+        "accounts/professional_link_form.html",
+        {"form": form, "is_editing": True},
+    )
+
+
+@role_required(User.Role.JOB_SEEKER)
+@require_POST
+def delete_professional_link(request, pk):
+    professional_link = get_object_or_404(
+        ProfessionalLink,
+        pk=pk,
+        profile__user=request.user,
+    )
+    professional_link.delete()
+    messages.success(request, "Professional link deleted.")
+    return redirect("accounts:job_seeker_area")
