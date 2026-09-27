@@ -25,6 +25,8 @@ class JobForm(forms.ModelForm):
             "company",
             "description",
             "address",
+            "lat",
+            "lng",
             "salary_min",
             "salary_max",
             "remote_type",
@@ -33,7 +35,24 @@ class JobForm(forms.ModelForm):
         ]
         widgets = {
             "description": forms.Textarea(attrs={"rows": 6}),
+            # The office pin is chosen on the map; these inputs carry its coordinates.
+            "lat": forms.HiddenInput(),
+            "lng": forms.HiddenInput(),
         }
+
+    def _clean_coordinate(self, name, limit, label):
+        value = self.cleaned_data.get(name)
+        if value is None:
+            return None
+        if not -limit <= value <= limit:
+            raise forms.ValidationError(f"{label} must be between -{limit} and {limit}.")
+        return round(value, 6)
+
+    def clean_lat(self):
+        return self._clean_coordinate("lat", 90, "Latitude")
+
+    def clean_lng(self):
+        return self._clean_coordinate("lng", 180, "Longitude")
 
     def clean(self):
         cleaned = super().clean()
@@ -41,6 +60,9 @@ class JobForm(forms.ModelForm):
         hi = cleaned.get("salary_max")
         if lo is not None and hi is not None and lo > hi:
             self.add_error("salary_max", "Max salary must be at least min salary.")
+        if not self.has_error("lat") and not self.has_error("lng"):
+            if (cleaned.get("lat") is None) != (cleaned.get("lng") is None):
+                self.add_error("lat", "Pin the office location on the map, or clear the pin.")
         return cleaned
 class JobSearchForm(forms.Form):
     title = forms.CharField(required=False)
