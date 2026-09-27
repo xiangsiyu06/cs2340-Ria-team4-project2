@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Job map - CareerBridge{% endblock %}
+
+{% block extra_head %}{% include "components/map_assets.html" %}{% endblock %}
+
+{% block content %}
+<header class="page-heading">
+    <p class="eyebrow">Explore by location</p>
+    <h1>Jobs on the map</h1>
+    <p class="lead">See where each opening is based and which ones are close to you. Drag the map to explore, or pick a job from the list.</p>
+</header>
+
+<form method="get" class="card map-filters" novalidate>
+    {% for field in form %}
+        {% include "components/form_field.html" with field=field %}
+    {% endfor %}
+    <div class="actions">
+        <button class="button" type="submit">Search</button>
+        <a class="button button--ghost" href="{% url 'jobs:map' %}">Clear</a>
+    </div>
+</form>
+
+{% if form.errors %}
+    <p class="alert alert--error">Please fix the filters above.</p>
+{% endif %}
+
+<div class="map-toolbar">
+    <p class="text-muted">
+        {{ markers|length }} job{{ markers|length|pluralize }} on the map
+        {% if unpinned_count %}
+            &middot; {{ unpinned_count }} matching job{{ unpinned_count|pluralize }} {{ unpinned_count|pluralize:"has,have" }} no office location
+            (<a href="{% url 'jobs:search' %}{% if request.GET %}?{{ request.GET.urlencode }}{% endif %}">see the list</a>)
+        {% endif %}
+    </p>
+    <button class="button button--secondary button--small" type="button" data-locate>Show my location</button>
+</div>
+<p class="location-card__message" data-locate-message aria-live="polite" hidden></p>
+
+<div class="map-layout">
+    <div class="map map--tall" id="job-map"></div>
+    <ol class="job-list" data-job-list aria-label="Jobs on the map">
+        {% for job in markers %}
+            <li>
+                <button class="job-item" type="button" data-job-id="{{ job.id }}">
+                    <span class="job-item__title">{{ job.title }}</span>
+                    <span class="job-item__meta">{{ job.company }}{% if job.address %} &middot; {{ job.address }}{% endif %}</span>
+                    <span class="job-item__row">
+                        <span class="badge">{{ job.remote_type }}</span>
+                        {% if job.visa_sponsorship %}<span class="badge badge--accent">Visa</span>{% endif %}
+                        {% if job.salary_min or job.salary_max %}
+                            <span class="text-muted">{% if job.salary_min and job.salary_max %}${{ job.salary_min|floatformat:"0g" }} - ${{ job.salary_max|floatformat:"0g" }}{% elif job.salary_min %}From ${{ job.salary_min|floatformat:"0g" }}{% else %}Up to ${{ job.salary_max|floatformat:"0g" }}{% endif %}</span>
+                        {% endif %}
+                    </span>
+                </button>
+            </li>
+        {% empty %}
+            <li class="job-list__empty">No pinned jobs match these filters.</li>
+        {% endfor %}
+    </ol>
+</div>
+
+{{ markers|json_script:"job-markers" }}
+{% endblock %}
+
+{% block extra_body %}
+<script defer src="{% static 'js/job_map.js' %}?v=20260927-1"></script>
+{% endblock %}

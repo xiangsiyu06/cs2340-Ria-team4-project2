@@ -5,6 +5,7 @@ from django.contrib.auth.decorators import login_required
 from django.db.models import Q
 from django.http import Http404, HttpResponseForbidden
 from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse
 from django.views.decorators.http import require_POST
 
 from accounts.decorators import role_required
@@ -152,45 +153,77 @@ def job_apply(request, pk):
         messages.info(request, "You have already applied to this job.")
     return redirect("jobs:detail", pk=job.pk)
 
+def _filter_jobs(form, jobs):
+    """Apply JobSearchForm filters; shared by the search page and the job map."""
+    if not form.is_valid():
+        return jobs.none() if form.is_bound else jobs
+
+    data = form.cleaned_data
+
+    if data["title"]:
+        jobs = jobs.filter(title__icontains=data["title"])
+
+    for skill in data["skills"].split(","):
+        skill = skill.strip()
+        if skill:
+            pattern = r"(^|,)\s*" + re.escape(skill) + r"\s*(,|$)"
+            jobs = jobs.filter(skills__iregex=pattern)
+
+    if data["location"]:
+        jobs = jobs.filter(address__icontains=data["location"])
+
+    lo, hi = data["salary_min"], data["salary_max"]
+    if lo is not None:
+        jobs = jobs.filter(
+            Q(salary_max__gte=lo) | Q(salary_max__isnull=True, salary_min__isnull=False)
+        )
+    if hi is not None:
+        jobs = jobs.filter(
+            Q(salary_min__lte=hi) | Q(salary_min__isnull=True, salary_max__isnull=False)
+        )
+
+    if data["remote_type"]:
+        jobs = jobs.filter(remote_type=data["remote_type"])
+
+    if data["visa_sponsorship"]:
+        jobs = jobs.filter(visa_sponsorship=True)
+
+    return jobs
+
+
 @login_required
 def job_search(request):
     form = JobSearchForm(request.GET or None)
-    jobs = Job.objects.filter(status=Job.Status.ACTIVE)
-
-    if form.is_valid():
-        data = form.cleaned_data
-
-        if data["title"]:
-            jobs = jobs.filter(title__icontains=data["title"])
-
-        for skill in data["skills"].split(","):
-            skill = skill.strip()
-            if skill:
-                pattern = r"(^|,)\s*" + re.escape(skill) + r"\s*(,|$)"
-                jobs = jobs.filter(skills__iregex=pattern)
-
-        if data["location"]:
-            jobs = jobs.filter(address__icontains=data["location"])
-
-        lo, hi = data["salary_min"], data["salary_max"]
-        if lo is not None:
-            jobs = jobs.filter(
-                Q(salary_max__gte=lo) | Q(salary_max__isnull=True, salary_min__isnull=False)
-            )
-        if hi is not None:
-            jobs = jobs.filter(
-                Q(salary_min__lte=hi) | Q(salary_min__isnull=True, salary_max__isnull=False)
-            )
-
-        if data["remote_type"]:
-            jobs = jobs.filter(remote_type=data["remote_type"])
-
-        if data["visa_sponsorship"]:
-            jobs = jobs.filter(visa_sponsorship=True)
-
-    elif form.is_bound:
-        jobs = jobs.none()
+    jobs = _filter_jobs(form, Job.objects.filter(status=Job.Status.ACTIVE))
     return render(request, "jobs/job_search.html", {"form": form, "jobs": jobs})
+
+
+@login_required
+def job_map(request):
+    form = JobSearchForm(request.GET or None)
+    jobs = _filter_jobs(form, Job.objects.filter(status=Job.Status.ACTIVE))
+    pinned = jobs.filter(lat__isnull=False, lng__isnull=False)
+    markers = [
+        {
+            "id": job.pk,
+            "title": job.title,
+            "company": job.company,
+            "address": job.address,
+            "remote_type": job.get_remote_type_display(),
+            "visa_sponsorship": job.visa_sponsorship,
+            "salary_min": job.salary_min,
+            "salary_max": job.salary_max,
+            "lat": job.lat,
+            "lng": job.lng,
+            "url": reverse("jobs:detail", args=[job.pk]),
+        }
+        for job in pinned
+    ]
+    return render(request, "jobs/job_map.html", {
+        "form": form,
+        "markers": markers,
+        "unpinned_count": jobs.count() - len(markers),
+    })
 
 
 @admin_required
