@@ -26,10 +26,12 @@
                 {% if request.user.is_authenticated %}
                     <a href="{% url 'accounts:dashboard' %}">Dashboard</a>
                     {% if request.user.role == 'job_seeker' %}
+                        <a href="{% url 'jobs:search' %}">Find jobs</a>
                         <a href="{% url 'accounts:job_seeker_area' %}">Job seeker area</a>
                     {% elif request.user.role == 'recruiter' %}
                         <a href="{% url 'accounts:recruiter_area' %}">Recruiter area</a>
                     {% elif request.user.role == 'administrator' %}
+                        <a href="{% url 'jobs:moderation' %}">Moderation</a>
                         <a href="{% url 'accounts:reporting' %}">Reports</a>
                     {% endif %}
                     <form method="post" action="{% url 'accounts:logout' %}">
