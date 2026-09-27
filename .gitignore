@@ -242,3 +242,5 @@ graphify-out/
 
 # Local editor settings
 .vscode/
+# Django collectstatic output
+staticfiles/
