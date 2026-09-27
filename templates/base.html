@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="description" content="CareerBridge connects early-career job seekers with hiring teams.">
     <title>{% block title %}CareerBridge{% endblock %}</title>
-    <link rel="stylesheet" href="{% static 'css/app.css' %}?v=20260927-1">
+    <link rel="stylesheet" href="{% static 'css/app.css' %}?v=20260927-2">
     {% block extra_head %}{% endblock %}
 </head>
 <body class="{% block body_class %}{% endblock %}">
@@ -27,6 +27,7 @@
                     <a href="{% url 'accounts:dashboard' %}">Dashboard</a>
                     {% if request.user.role == 'job_seeker' %}
                         <a href="{% url 'jobs:search' %}">Find jobs</a>
+                        <a href="{% url 'jobs:map' %}">Job map</a>
                         <a href="{% url 'accounts:job_seeker_area' %}">Job seeker area</a>
                     {% elif request.user.role == 'recruiter' %}
                         <a href="{% url 'accounts:recruiter_area' %}">Recruiter area</a>
