@@ -52,6 +52,10 @@ class Job(models.Model):
     def skill_list(self):
         return [s.strip() for s in self.skills.split(",") if s.strip()]
 
+    @property
+    def has_location(self):
+        return self.lat is not None and self.lng is not None
+
 
 class Application(models.Model):
     class Status(models.TextChoices):
