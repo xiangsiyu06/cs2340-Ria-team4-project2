@@ -98,6 +98,8 @@ Each `(job, applicant)` pair is unique, so a job seeker cannot create duplicate 
 - SQLite for local development
 - Django templates
 - HTML and CSS
+- MapLibre GL JS 5 (loaded from jsDelivr) with OpenFreeMap map tiles for the job maps; no API key needed
+- OpenStreetMap Nominatim for turning a job's address into a map pin, called from the browser
 
 ## Local setup
 
@@ -174,6 +176,7 @@ Django's `is_staff`/`is_superuser` flags control access to Django Admin, while t
 | `/accounts/job-seeker/` | View and build a job seeker profile | Job seeker |
 | `/accounts/recruiter/` | Recruiter workspace | Recruiter |
 | `/jobs/` | Search active jobs | Authenticated users |
+| `/jobs/map/` | Browse pinned jobs on an interactive map | Authenticated users |
 | `/jobs/new/` | Create a job posting | Recruiter |
 | `/jobs/mine/` | View owned job postings | Recruiter |
 | `/jobs/moderation/` | Remove or restore job postings | Administrator |

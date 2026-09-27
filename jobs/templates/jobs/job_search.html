@@ -12,6 +12,7 @@
     <div>
         <button class="button" type="submit">Search</button>
         <a class="button button--ghost" href="{% url 'jobs:search' %}">Clear</a>
+        <a class="button button--secondary" href="{% url 'jobs:map' %}{% if request.GET %}?{{ request.GET.urlencode }}{% endif %}">View results on map</a>
     </div>
 </form>
 
