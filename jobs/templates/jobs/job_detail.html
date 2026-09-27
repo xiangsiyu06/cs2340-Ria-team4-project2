@@ -2,6 +2,8 @@
 
 {% block title %}{{ job.title }} - CareerBridge{% endblock %}
 
+{% block extra_head %}{% if job.has_location %}{% include "components/map_assets.html" %}{% endif %}{% endblock %}
+
 {% block content %}
 {% if job.status == "removed" %}
     <div class="alert alert--error">This job post has been removed by an administrator and is hidden from job seekers.</div>
@@ -22,6 +24,17 @@
 {% endif %}
 
 <div>{{ job.description|linebreaks }}</div>
+
+{% if job.has_location %}
+    {% with lat=job.lat|stringformat:"f" lng=job.lng|stringformat:"f" %}
+        <section class="card location-card location-card--compact" aria-labelledby="office-heading">
+            <h2 id="office-heading">Office location</h2>
+            <div class="map map--small" data-pin-map data-lat="{{ lat }}" data-lng="{{ lng }}" data-label="{{ job.company }} office"></div>
+            {% if job.address %}<p>{{ job.address }}</p>{% endif %}
+            <p><a href="https://www.openstreetmap.org/?mlat={{ lat }}&amp;mlon={{ lng }}#map=17/{{ lat }}/{{ lng }}" target="_blank" rel="noopener">Open in OpenStreetMap</a></p>
+        </section>
+    {% endwith %}
+{% endif %}
 
 <p class="text-muted">Posted {{ job.created_at|date:"M j, Y" }}</p>
 
