@@ -5,7 +5,10 @@
     <p class="eyebrow">Candidate review</p>
     <h1>{{ application.applicant.get_full_name|default:application.applicant.username }}</h1>
     <p class="lead">Application for {{ application.job.title }} at {{ application.job.company }}</p>
-    <a href="{% url 'jobs:job_applications' application.job.pk %}">Back to applicants</a>
+    <div class="actions">
+        <a class="button" href="{% url 'communications:start' application.applicant.pk %}">Message candidate</a>
+        <a href="{% url 'jobs:job_applications' application.job.pk %}">Back to applicants</a>
+    </div>
 </header>
 <div class="grid grid--2">
     <section class="card" aria-labelledby="profile-heading">

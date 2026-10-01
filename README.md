@@ -83,10 +83,14 @@ User
 │   ├── WorkExperience (one-to-many)
 │   └── ProfessionalLink (one-to-many)
 ├── Job (one-to-many, for recruiters)
-└── Application (one-to-many, for job seekers)
+├── Application (one-to-many, for job seekers)
+└── Conversation (one-to-many, as recruiter or candidate)
 
 Job
 └── Application (one-to-many)
+
+Conversation
+└── Message (one-to-many, private to its recruiter and candidate)
 ```
 
 Each `(job, applicant)` pair is unique, so a job seeker cannot create duplicate applications for the same job.
@@ -180,6 +184,7 @@ Django's `is_staff`/`is_superuser` flags control access to Django Admin, while t
 | `/jobs/new/` | Create a job posting | Recruiter |
 | `/jobs/mine/` | View owned job postings | Recruiter |
 | `/jobs/moderation/` | Remove or restore job postings | Administrator |
+| `/messages/` | View private recruiter-candidate conversations | Job seeker or recruiter |
 | `/accounts/reports/` | View metrics and download CSV reports | Administrator |
 | `/admin/` | Manage users and Django data | Staff users |
 
@@ -193,6 +198,7 @@ ProjectTwo/
 ├── jobs/                   # Jobs, applications, search, and moderation
 │   ├── migrations/         # Job and application schema history
 │   └── templates/jobs/     # Job-related pages
+├── communications/         # Private recruiter-candidate conversations and messages
 ├── config/                 # Django settings and root URL configuration
 ├── static/css/app.css      # Shared visual design
 ├── templates/              # Shared base template and components
@@ -205,6 +211,8 @@ ProjectTwo/
 - Anonymous users are redirected to the login page when authentication is required.
 - Role-protected views return HTTP 403 when the signed-in user has the wrong role.
 - Recruiters can edit only jobs they own.
+- Only a conversation's recruiter and candidate can read or send its messages.
+- Message senders and recipients are derived on the server rather than trusted from form data.
 - Removed jobs are hidden from ordinary users but remain visible to their recruiter and administrators.
 - State-changing actions such as logout, job applications, removal, and restoration use POST requests.
 - CSV exports omit application notes and escape formula-like text to reduce spreadsheet-injection risk.

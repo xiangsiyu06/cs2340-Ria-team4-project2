@@ -1,0 +1,137 @@
+from django.contrib import messages
+from django.db import transaction
+from django.db.models import Count, OuterRef, Q, Subquery
+from django.shortcuts import get_object_or_404, redirect, render
+from django.utils import timezone
+
+from accounts.decorators import role_required
+from accounts.models import User
+
+from .forms import MessageForm
+from .models import Conversation, Message
+
+messaging_required = role_required(User.Role.JOB_SEEKER, User.Role.RECRUITER)
+recruiter_required = role_required(User.Role.RECRUITER)
+
+
+def _participant_conversations(user):
+    if user.role == User.Role.RECRUITER:
+        return Conversation.objects.filter(recruiter=user)
+    return Conversation.objects.filter(candidate=user)
+
+
+def _conversation_list(user):
+    latest = Message.objects.filter(conversation=OuterRef("pk")).order_by(
+        "-created_at", "-pk"
+    )
+    conversations = (
+        _participant_conversations(user)
+        .select_related("recruiter", "candidate")
+        .annotate(
+            latest_body=Subquery(latest.values("body")[:1]),
+            latest_created_at=Subquery(latest.values("created_at")[:1]),
+            unread_count=Count(
+                "messages",
+                filter=Q(messages__read_at__isnull=True) & ~Q(messages__sender=user),
+            ),
+        )
+        .order_by("-updated_at", "-pk")
+    )
+    for conversation in conversations:
+        conversation.other_user = conversation.other_participant(user)
+    return conversations
+
+
+def _thread_context(user, conversation, form):
+    other_user = conversation.other_participant(user)
+    return {
+        "conversation": conversation,
+        "conversation_messages": conversation.messages.select_related("sender"),
+        "form": form,
+        "other_user": other_user,
+    }
+
+
+@transaction.atomic
+def _save_message(conversation, sender, form):
+    message = form.save(commit=False)
+    message.conversation = conversation
+    message.sender = sender
+    message.full_clean()
+    message.save()
+    conversation.save(update_fields=["updated_at"])
+    return message
+
+
+@messaging_required
+def inbox(request):
+    return render(
+        request,
+        "communications/inbox.html",
+        {"conversations": _conversation_list(request.user)},
+    )
+
+
+@recruiter_required
+def start_conversation(request, candidate_pk):
+    candidate = get_object_or_404(
+        User,
+        pk=candidate_pk,
+        role=User.Role.JOB_SEEKER,
+        is_active=True,
+    )
+    existing = Conversation.objects.filter(
+        recruiter=request.user,
+        candidate=candidate,
+    ).first()
+    if existing and request.method == "GET":
+        return redirect("communications:detail", pk=existing.pk)
+
+    form = MessageForm(request.POST if request.method == "POST" else None)
+    if request.method == "POST" and form.is_valid():
+        with transaction.atomic():
+            conversation = existing
+            if conversation is None:
+                conversation, _ = Conversation.objects.get_or_create(
+                    recruiter=request.user,
+                    candidate=candidate,
+                )
+            _save_message(conversation, request.user, form)
+        messages.success(request, "Message sent.")
+        return redirect("communications:detail", pk=conversation.pk)
+
+    return render(
+        request,
+        "communications/conversation.html",
+        {
+            "conversation": None,
+            "conversation_messages": (),
+            "form": form,
+            "other_user": candidate,
+        },
+    )
+
+
+@messaging_required
+def conversation_detail(request, pk):
+    conversation = get_object_or_404(
+        _participant_conversations(request.user).select_related(
+            "recruiter", "candidate"
+        ),
+        pk=pk,
+    )
+    conversation.messages.filter(read_at__isnull=True).exclude(
+        sender=request.user
+    ).update(read_at=timezone.now())
+
+    form = MessageForm(request.POST if request.method == "POST" else None)
+    if request.method == "POST" and form.is_valid():
+        _save_message(conversation, request.user, form)
+        messages.success(request, "Message sent.")
+        return redirect("communications:detail", pk=conversation.pk)
+
+    return render(
+        request,
+        "communications/conversation.html",
+        _thread_context(request.user, conversation, form),
+    )

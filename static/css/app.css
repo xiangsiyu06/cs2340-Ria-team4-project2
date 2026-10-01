@@ -238,6 +238,18 @@ h3 {
     color: var(--color-ink-soft);
 }
 
+.visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
 .stack > * + * {
     margin-top: var(--space-3);
 }
@@ -554,6 +566,103 @@ a:focus-visible {
     border-radius: 50%;
     font-size: 1.35rem;
     font-weight: 800;
+}
+
+.conversation-list {
+    display: grid;
+    gap: var(--space-3);
+}
+
+.conversation-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-4);
+}
+
+.conversation-card--unread {
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 2px var(--color-primary-soft);
+}
+
+.conversation-card h2,
+.conversation-card p {
+    margin-bottom: var(--space-2);
+}
+
+.conversation-card__preview {
+    overflow-wrap: anywhere;
+}
+
+.conversation-heading {
+    display: flex;
+    align-items: end;
+    justify-content: space-between;
+    gap: var(--space-4);
+}
+
+.message-panel {
+    min-height: 18rem;
+    margin-bottom: var(--space-4);
+    padding: clamp(1rem, 3vw, 1.5rem);
+    background: #e8f0f2;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+}
+
+.message-thread {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.message {
+    display: flex;
+}
+
+.message--mine {
+    justify-content: flex-end;
+}
+
+.message__bubble {
+    width: min(100%, 42rem);
+    padding: var(--space-3);
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md) var(--radius-md) var(--radius-md) 0.2rem;
+    box-shadow: var(--shadow-sm);
+}
+
+.message--mine .message__bubble {
+    background: var(--color-primary-soft);
+    border-color: #9ed5cf;
+    border-radius: var(--radius-md) var(--radius-md) 0.2rem var(--radius-md);
+}
+
+.message__meta {
+    display: flex;
+    justify-content: space-between;
+    gap: var(--space-3);
+    margin-bottom: var(--space-2);
+    color: var(--color-ink-soft);
+    font-size: 0.82rem;
+}
+
+.message__bubble p {
+    margin: 0;
+    overflow-wrap: anywhere;
+}
+
+.message-panel__empty {
+    margin: var(--space-4) auto;
+}
+
+.message-composer {
+    max-width: 48rem;
+    margin-inline: auto;
 }
 
 .metric {
@@ -937,7 +1046,9 @@ a:focus-visible {
     }
 
     .site-header__inner,
-    .site-footer__inner {
+    .site-footer__inner,
+    .conversation-card,
+    .conversation-heading {
         align-items: flex-start;
         flex-direction: column;
     }
