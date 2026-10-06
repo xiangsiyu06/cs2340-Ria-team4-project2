@@ -7,7 +7,7 @@ from django.http import Http404, HttpResponseForbidden
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.views.decorators.http import require_POST
-from .recommendations import recommend_jobs
+from .recommendations import recommend_candidates, recommend_jobs
 from accounts.decorators import role_required
 from accounts.models import JobSeekerProfile, User
 from .forms import ApplicationForm, ApplicationStatusForm, JobForm, JobSearchForm
@@ -15,6 +15,51 @@ from .models import Application, Job
 
 recruiter_required = role_required(User.Role.RECRUITER)
 admin_required = role_required(User.Role.ADMINISTRATOR)
+
+@recruiter_required
+def candidate_recommendations(request, pk):
+    job = get_object_or_404(
+        Job,
+        pk=pk,
+        recruiter=request.user,
+        status=Job.Status.ACTIVE,
+    )
+    return render(
+        request,
+        "jobs/candidate_recommendations.html",
+        {
+            "job": job,
+            "recommendations": recommend_candidates(request.user, job),
+            "has_skills": bool(job.skill_list()),
+        },
+    )
+
+
+@recruiter_required
+def candidate_profile(request, pk, profile_pk):
+    job = get_object_or_404(
+        Job,
+        pk=pk,
+        recruiter=request.user,
+        status=Job.Status.ACTIVE,
+    )
+    profile = get_object_or_404(
+        JobSeekerProfile.objects.select_related("user"),
+        pk=profile_pk,
+        user__role=User.Role.JOB_SEEKER,
+        user__is_active=True,
+    )
+
+    if not can_view_profile(request.user, profile):
+        raise Http404
+
+    return render(
+        request,
+        "jobs/candidate_profile.html",
+        {"job": job, "profile": profile},
+    )
+
+
 
 @role_required(User.Role.JOB_SEEKER)
 def job_recommendations(request):

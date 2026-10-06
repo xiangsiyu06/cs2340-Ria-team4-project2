@@ -23,4 +23,14 @@ urlpatterns = [
         views.job_recommendations,
         name="recommendations",
     ),
+    path(
+        "<int:pk>/candidates/",
+        views.candidate_recommendations,
+        name="candidate_recommendations",
+    ),
+    path(
+        "<int:pk>/candidates/<int:profile_pk>/",
+        views.candidate_profile,
+        name="candidate_profile",
+    ),
 ]

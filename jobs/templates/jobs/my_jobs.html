@@ -14,6 +14,12 @@
             <span class="text-muted"> {{ job.company }} - {{ job.get_status_display }}</span>
             <a class="button button--ghost button--small" href="{% url 'jobs:edit' job.pk %}">Edit</a>
             <a class="button button--secondary button--small" href="{% url 'jobs:job_applications' job.pk %}">View applicants</a>
+            {% if job.status == "active" %}
+                <a class="button button--secondary button--small"
+                   href="{% url 'jobs:candidate_recommendations' job.pk %}">
+                    Recommended candidates
+                </a>
+            {% endif %}
         </li>
     {% endfor %}
     </ul>
