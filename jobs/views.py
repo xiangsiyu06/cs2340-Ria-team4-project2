@@ -7,7 +7,7 @@ from django.http import Http404, HttpResponseForbidden
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.views.decorators.http import require_POST
-
+from .recommendations import recommend_jobs
 from accounts.decorators import role_required
 from accounts.models import JobSeekerProfile, User
 from .forms import ApplicationForm, ApplicationStatusForm, JobForm, JobSearchForm
@@ -15,6 +15,20 @@ from .models import Application, Job
 
 recruiter_required = role_required(User.Role.RECRUITER)
 admin_required = role_required(User.Role.ADMINISTRATOR)
+
+@role_required(User.Role.JOB_SEEKER)
+def job_recommendations(request):
+    profile = JobSeekerProfile.objects.filter(user=request.user).first()
+    has_skills = bool(profile and profile.skill_list())
+
+    return render(
+        request,
+        "jobs/job_recommendations.html",
+        {
+            "recommendations": recommend_jobs(request.user),
+            "has_skills": has_skills,
+        },
+    )
 
 
 @role_required(User.Role.JOB_SEEKER)

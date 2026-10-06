@@ -18,4 +18,9 @@ urlpatterns = [
     path("moderation/", views.moderation_list, name="moderation"),
     path("<int:pk>/remove/", views.job_remove, name="remove"),
     path("<int:pk>/restore/", views.job_restore, name="restore"),
+    path(
+        "recommendations/",
+        views.job_recommendations,
+        name="recommendations",
+    ),
 ]
