@@ -35,6 +35,14 @@ class JobSeekerProfile(models.Model):
     location = models.CharField(max_length=255, blank=True)
     lat = models.FloatField(null=True, blank=True)
     lng = models.FloatField(null=True, blank=True)
+    recruiter_visible = models.BooleanField(
+        default=False,
+        help_text=(
+            "Allow recruiters to discover and view your profile. "
+            "Recruiters whose jobs you apply to can still view it."
+        ),
+    )
+
 
     def __str__(self):
         return f"{self.user.username}'s profile"

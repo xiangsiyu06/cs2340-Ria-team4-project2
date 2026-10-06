@@ -26,7 +26,10 @@ class RegistrationForm(UserCreationForm):
 class JobSeekerProfileForm(forms.ModelForm):
     class Meta:
         model = JobSeekerProfile
-        fields = ("headline", "skills", "location")
+        fields = ("headline", "skills", "location", "recruiter_visible")
+        labels = {
+            "recruiter_visible": "Allow recruiter discovery",
+        }
         widgets = {
             "headline": forms.TextInput(
                 attrs={"placeholder": "e.g. Aspiring software engineer"}
