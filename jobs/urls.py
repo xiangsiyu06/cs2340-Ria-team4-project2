@@ -18,4 +18,19 @@ urlpatterns = [
     path("moderation/", views.moderation_list, name="moderation"),
     path("<int:pk>/remove/", views.job_remove, name="remove"),
     path("<int:pk>/restore/", views.job_restore, name="restore"),
+    path(
+        "recommendations/",
+        views.job_recommendations,
+        name="recommendations",
+    ),
+    path(
+        "<int:pk>/candidates/",
+        views.candidate_recommendations,
+        name="candidate_recommendations",
+    ),
+    path(
+        "<int:pk>/candidates/<int:profile_pk>/",
+        views.candidate_profile,
+        name="candidate_profile",
+    ),
 ]

@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+
+{% block title %}Candidate profile | CareerBridge{% endblock %}
+
+{% block content %}
+<header class="page-heading">
+    <p class="eyebrow">Candidate profile</p>
+    <h1>{{ profile.user.get_full_name|default:profile.user.username }}</h1>
+    <p class="lead">Reviewing for {{ job.title }} at {{ job.company }}</p>
+    <a href="{% url 'jobs:candidate_recommendations' job.pk %}">
+        Back to recommendations
+    </a>
+</header>
+
+<section class="card">
+    <h2>Professional profile</h2>
+    {% include "jobs/components/profile_details.html" with profile=profile only %}
+</section>
+{% endblock %}

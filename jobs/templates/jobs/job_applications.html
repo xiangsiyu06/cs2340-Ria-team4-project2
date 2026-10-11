@@ -16,7 +16,10 @@
             <h2>{{ application.applicant.get_full_name|default:application.applicant.username }}</h2>
             <p>Status: <span class="badge">{{ application.get_status_display }}</span></p>
             <p class="text-muted">Applied {{ application.created_at|date:"M j, Y, g:i a" }}</p>
-            <a class="button button--secondary" href="{% url 'jobs:application_detail' application.pk %}">View profile and application</a>
+            <div class="actions">
+                <a class="button button--secondary" href="{% url 'jobs:application_detail' application.pk %}">View profile and application</a>
+                <a href="{% url 'communications:start' application.applicant.pk %}">Message candidate</a>
+            </div>
         </article>
     {% empty %}
         <section class="empty-state">

@@ -1,5 +1,5 @@
 import re
-
+from accounts.permissions import can_view_profile
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.db.models import Q
@@ -7,7 +7,7 @@ from django.http import Http404, HttpResponseForbidden
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.views.decorators.http import require_POST
-
+from .recommendations import recommend_candidates, recommend_jobs
 from accounts.decorators import role_required
 from accounts.models import JobSeekerProfile, User
 from .forms import ApplicationForm, ApplicationStatusForm, JobForm, JobSearchForm
@@ -15,6 +15,65 @@ from .models import Application, Job
 
 recruiter_required = role_required(User.Role.RECRUITER)
 admin_required = role_required(User.Role.ADMINISTRATOR)
+
+@recruiter_required
+def candidate_recommendations(request, pk):
+    job = get_object_or_404(
+        Job,
+        pk=pk,
+        recruiter=request.user,
+        status=Job.Status.ACTIVE,
+    )
+    return render(
+        request,
+        "jobs/candidate_recommendations.html",
+        {
+            "job": job,
+            "recommendations": recommend_candidates(request.user, job),
+            "has_skills": bool(job.skill_list()),
+        },
+    )
+
+
+@recruiter_required
+def candidate_profile(request, pk, profile_pk):
+    job = get_object_or_404(
+        Job,
+        pk=pk,
+        recruiter=request.user,
+        status=Job.Status.ACTIVE,
+    )
+    profile = get_object_or_404(
+        JobSeekerProfile.objects.select_related("user"),
+        pk=profile_pk,
+        user__role=User.Role.JOB_SEEKER,
+        user__is_active=True,
+    )
+
+    if not can_view_profile(request.user, profile):
+        raise Http404
+
+    return render(
+        request,
+        "jobs/candidate_profile.html",
+        {"job": job, "profile": profile},
+    )
+
+
+
+@role_required(User.Role.JOB_SEEKER)
+def job_recommendations(request):
+    profile = JobSeekerProfile.objects.filter(user=request.user).first()
+    has_skills = bool(profile and profile.skill_list())
+
+    return render(
+        request,
+        "jobs/job_recommendations.html",
+        {
+            "recommendations": recommend_jobs(request.user),
+            "has_skills": has_skills,
+        },
+    )
 
 
 @role_required(User.Role.JOB_SEEKER)
@@ -36,13 +95,19 @@ def job_applications(request, pk):
     })
 
 
-def _application_review_context(application, status_form):
-    profile = (
-        JobSeekerProfile.objects.filter(user=application.applicant)
-        .prefetch_related("education_records", "work_experiences", "professional_links")
-        .first()
-    )
-    return {"application": application, "profile": profile, "status_form": status_form}
+def _application_review_context(viewer, application, status_form):
+    profile = JobSeekerProfile.objects.filter(
+        user=application.applicant,
+    ).first()
+
+    if not can_view_profile(viewer, profile):
+        profile = None
+
+    return {
+        "application": application,
+        "profile": profile,
+        "status_form": status_form,
+    }
 
 
 @recruiter_required
@@ -51,9 +116,15 @@ def application_detail(request, pk):
         Application.objects.select_related("job", "applicant"),
         pk=pk, job__recruiter=request.user,
     )
-    return render(request, "jobs/application_detail.html", _application_review_context(
-        application, ApplicationStatusForm(instance=application),
-    ))
+    return render(
+        request,
+        "jobs/application_detail.html",
+        _application_review_context(
+            request.user,
+            application,
+            ApplicationStatusForm(instance=application),
+        ),
+    )
 
 
 @recruiter_required
@@ -70,9 +141,11 @@ def application_status(request, pk):
         application.save(update_fields=["status"])
         messages.success(request, "Application status updated.")
         return redirect("jobs:application_detail", pk=application.pk)
-    return render(request, "jobs/application_detail.html", _application_review_context(
-        application, form,
-    ))
+    return render(
+        request,
+        "jobs/application_detail.html",
+        _application_review_context(request.user, application, form),
+    )
 
 
 @recruiter_required

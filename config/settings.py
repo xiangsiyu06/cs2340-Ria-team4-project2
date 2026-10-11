@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     "accounts.apps.AccountsConfig",
     "jobs",
+    "communications.apps.CommunicationsConfig",
 ]
 
 AUTH_USER_MODEL = "accounts.User"
