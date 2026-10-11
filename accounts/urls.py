@@ -102,4 +102,23 @@ urlpatterns = [
         views.delete_professional_link,
         name="delete_professional_link",
     ),
+    path(
+        "job-seeker/profile/projects/add/",
+        views.add_project,
+        name="add_project",
+    ),
+    path(
+        "job-seeker/profile/projects/<int:pk>/edit/",
+        views.edit_project,
+        name="edit_project",
+    ),
+    path(
+        "job-seeker/profile/projects/<int:pk>/delete/",
+        views.delete_project,
+        name="delete_project",
+    ),
+    path(
+        "candidates/", 
+        views.candidate_search, 
+        name="candidate_search"),
 ]

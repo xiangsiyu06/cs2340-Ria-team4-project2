@@ -1,4 +1,5 @@
 import csv
+import re
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
@@ -16,6 +17,8 @@ from .forms import (
     RegistrationForm,
     WorkExperienceForm,
     ProfessionalLinkForm,
+    ProjectForm,
+    CandidateSearchForm,
 )
 from .models import (
     Education,
@@ -23,6 +26,7 @@ from .models import (
     ProfessionalLink,
     User,
     WorkExperience,
+    Project,
 )
 
 
@@ -57,10 +61,12 @@ def job_seeker_area(request):
         education_records = profile.education_records.all()
         work_experiences = profile.work_experiences.all()
         professional_links = profile.professional_links.all()
+        projects = profile.projects.all()
     else:
         education_records = Education.objects.none()
         work_experiences = WorkExperience.objects.none()
         professional_links = ProfessionalLink.objects.none()
+        projects = Project.objects.none()
 
     return render(
         request,
@@ -70,6 +76,7 @@ def job_seeker_area(request):
             "education_records": education_records,
             "work_experiences": work_experiences,
             "professional_links": professional_links,
+            "projects": projects,
         },
     )
 
@@ -448,3 +455,99 @@ def delete_professional_link(request, pk):
     professional_link.delete()
     messages.success(request, "Professional link deleted.")
     return redirect("accounts:job_seeker_area")
+
+@role_required(User.Role.JOB_SEEKER)
+def add_project(request):
+    profile = JobSeekerProfile.objects.filter(user=request.user).first()
+
+    if profile is None:
+        messages.info(request, "Create your profile before adding projects.")
+        return redirect("accounts:edit_job_seeker_profile")
+
+    form = ProjectForm(request.POST or None)
+
+    if request.method == "POST" and form.is_valid():
+        project = form.save(commit=False)
+        project.profile = profile
+        project.save()
+
+        messages.success(request, "Project added.")
+        return redirect("accounts:job_seeker_area")
+
+    return render(
+        request,
+        "accounts/project_form.html",
+        {"form": form, "is_editing": False},
+    )
+
+
+@role_required(User.Role.JOB_SEEKER)
+def edit_project(request, pk):
+    project = get_object_or_404(Project, pk=pk, profile__user=request.user)
+    form = ProjectForm(request.POST or None, instance=project)
+
+    if request.method == "POST" and form.is_valid():
+        form.save()
+        messages.success(request, "Project updated.")
+        return redirect("accounts:job_seeker_area")
+
+    return render(
+        request,
+        "accounts/project_form.html",
+        {"form": form, "is_editing": True},
+    )
+
+
+@role_required(User.Role.JOB_SEEKER)
+@require_POST
+def delete_project(request, pk):
+    project = get_object_or_404(Project, pk=pk, profile__user=request.user)
+    project.delete()
+    messages.success(request, "Project deleted.")
+    return redirect("accounts:job_seeker_area")
+def _searchable_profiles():
+    return JobSeekerProfile.objects.filter(
+        user__role=User.Role.JOB_SEEKER,
+        user__is_active=True,
+    )
+
+
+def _filter_candidates(form, profiles):
+    if not form.is_valid():
+        return profiles.none() if form.is_bound else profiles
+
+    data = form.cleaned_data
+
+    for skill in data["skills"].split(","):
+        skill = skill.strip()
+        if skill:
+            pattern = r"(^|,)\s*" + re.escape(skill) + r"\s*(,|$)"
+            profiles = profiles.filter(skills__iregex=pattern)
+
+    if data["location"]:
+        profiles = profiles.filter(location__icontains=data["location"])
+
+    if data["project"]:
+        keyword = data["project"].strip()
+        profiles = profiles.filter(
+            Q(projects__title__icontains=keyword)
+            | Q(projects__description__icontains=keyword)
+        ).distinct()
+
+    return profiles
+
+
+@role_required(User.Role.RECRUITER)
+def candidate_search(request):
+    form = CandidateSearchForm(request.GET or None)
+    profiles = (
+        _filter_candidates(form, _searchable_profiles())
+        .select_related("user")
+        .prefetch_related("projects")
+        .order_by("user__username")
+    )
+    return render(
+        request,
+        "accounts/candidate_search.html",
+        {"form": form, "profiles": profiles},
+    )

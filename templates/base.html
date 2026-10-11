@@ -31,6 +31,7 @@
                         <a href="{% url 'accounts:job_seeker_area' %}">Job seeker area</a>
                     {% elif request.user.role == 'recruiter' %}
                         <a href="{% url 'accounts:recruiter_area' %}">Recruiter area</a>
+                        <a href="{% url 'accounts:candidate_search' %}">Find candidates</a>
                     {% elif request.user.role == 'administrator' %}
                         <a href="{% url 'jobs:moderation' %}">Moderation</a>
                         <a href="{% url 'accounts:reporting' %}">Reports</a>

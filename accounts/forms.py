@@ -5,6 +5,7 @@ from .models import (
     Education,
     JobSeekerProfile,
     ProfessionalLink,
+    Project,
     User,
     WorkExperience,
 )
@@ -85,3 +86,33 @@ class ProfessionalLinkForm(forms.ModelForm):
                 attrs={"placeholder": "https://example.com"}
             ),
         }
+
+class ProjectForm(forms.ModelForm):
+    class Meta:
+        model = Project
+        fields = ("title", "description", "url")
+        labels = {"url": "Link (optional)"}
+        widgets = {
+            "title": forms.TextInput(
+                attrs={"placeholder": "e.g. Campus food delivery app"}
+            ),
+            "description": forms.Textarea(
+                attrs={"rows": 4, "placeholder": "What you built and the tools you used"}
+            ),
+            "url": forms.URLInput(
+                attrs={"placeholder": "https://github.com/you/project"}
+            ),
+        }
+
+
+class CandidateSearchForm(forms.Form):
+    skills = forms.CharField(
+        required=False,
+        help_text="Comma-separated; candidates must have every skill, e.g. Python, SQL",
+    )
+    location = forms.CharField(required=False)
+    project = forms.CharField(
+        required=False,
+        label="Project keyword",
+        help_text="Matches project titles and descriptions, e.g. React or machine learning",
+    )

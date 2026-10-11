@@ -169,4 +169,49 @@
         <p>Create your basic profile before adding professional links.</p>
     {% endif %}
 </section>
+<section class="card profile-section">
+    <h2>Projects</h2>
+
+    {% if profile %}
+        <a class="button button--small profile-section__action"
+           href="{% url 'accounts:add_project' %}">
+            Add project
+        </a>
+
+        {% for project in projects %}
+            <article class="profile-record">
+                <h3>{{ project.title }}</h3>
+
+                {% if project.description %}
+                    <p>{{ project.description|linebreaksbr }}</p>
+                {% endif %}
+
+                {% if project.url|slice:':8' == 'https://' or project.url|slice:':7' == 'http://' %}
+                    <p>
+                        <a href="{{ project.url }}" target="_blank" rel="noopener noreferrer">{{ project.url }}</a>
+                    </p>
+                {% endif %}
+
+                <div class="record-actions">
+                    <a class="button button--secondary button--small"
+                       href="{% url 'accounts:edit_project' project.pk %}">
+                        Edit
+                    </a>
+                    <form method="post"
+                          action="{% url 'accounts:delete_project' project.pk %}"
+                          onsubmit="return confirm('Delete this project?');">
+                        {% csrf_token %}
+                        <button class="button button--danger button--small" type="submit">
+                            Delete
+                        </button>
+                    </form>
+                </div>
+            </article>
+        {% empty %}
+            <p>No projects added yet.</p>
+        {% endfor %}
+    {% else %}
+        <p>Create your basic profile before adding projects.</p>
+    {% endif %}
+</section>
 {% endblock %}

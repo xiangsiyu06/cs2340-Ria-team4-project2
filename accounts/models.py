@@ -87,3 +87,15 @@ class ProfessionalLink(models.Model):
     def __str__(self):
         return f"{self.label} — {self.profile.user.username}"
     
+class Project(models.Model):
+    profile = models.ForeignKey(
+        JobSeekerProfile,
+        on_delete=models.CASCADE,
+        related_name="projects",
+    )
+    title = models.CharField(max_length=200)
+    description = models.TextField(blank=True)
+    url = models.URLField(blank=True)
+
+    def __str__(self):
+        return f"{self.title} - {self.profile.user.username}"
