@@ -506,9 +506,11 @@ def delete_project(request, pk):
     messages.success(request, "Project deleted.")
     return redirect("accounts:job_seeker_area")
 def _searchable_profiles():
+    """Profiles recruiters may find: active job seekers who opted in to recruiter visibility (US5)."""
     return JobSeekerProfile.objects.filter(
         user__role=User.Role.JOB_SEEKER,
         user__is_active=True,
+        recruiter_visible=True,
     )
 
 
