@@ -5,11 +5,11 @@
 {% block content %}
 <header class="page-heading">
     <p class="eyebrow">Recruiter workspace</p>
-    <h1>Find candidates</h1>
+    <h1>{% if saved_search %}{{ saved_search.name }}{% else %}Find candidates{% endif %}</h1>
     <p class="lead">Search job seekers by skills, location, and the projects they have built.</p>
 </header>
 
-<form method="get" novalidate>
+<form method="get" action="{% url 'accounts:candidate_search' %}" novalidate>
     {% for field in form %}
         {% include "components/form_field.html" with field=field %}
     {% endfor %}
@@ -24,9 +24,24 @@
 {% else %}
     <p class="text-muted">{{ profiles|length }} candidate{{ profiles|length|pluralize }} found</p>
 
+    {% if form.is_bound and not saved_search %}
+        <form method="post" action="{% url 'accounts:save_candidate_search' %}">
+            {% csrf_token %}
+            <input type="hidden" name="skills" value="{{ form.cleaned_data.skills }}">
+            <input type="hidden" name="location" value="{{ form.cleaned_data.location }}">
+            <input type="hidden" name="project" value="{{ form.cleaned_data.project }}">
+            <label for="saved-search-name">Save this search</label>
+            <input id="saved-search-name" name="name" maxlength="100" required placeholder="e.g. Atlanta Python devs">
+            <button class="button button--secondary" type="submit">Save search</button>
+        </form>
+    {% endif %}
+
     {% for profile in profiles %}
         <article class="card profile-section">
-            <h2>{{ profile.user.username }}</h2>
+            <h2>
+                {{ profile.user.username }}
+                {% if profile.pk in new_ids %}<span class="badge badge--accent">New</span>{% endif %}
+            </h2>
             {% if profile.headline %}<p>{{ profile.headline }}</p>{% endif %}
             {% if profile.location %}<p class="text-muted">{{ profile.location }}</p>{% endif %}
 

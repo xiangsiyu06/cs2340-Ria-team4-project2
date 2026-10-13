@@ -19,6 +19,7 @@ from .forms import (
     ProfessionalLinkForm,
     ProjectForm,
     CandidateSearchForm,
+    SavedSearchForm,
 )
 from .models import (
     Education,
@@ -27,6 +28,7 @@ from .models import (
     User,
     WorkExperience,
     Project,
+    SavedSearch,
 )
 
 
@@ -107,7 +109,14 @@ def edit_job_seeker_profile(request):
 
 @role_required(User.Role.RECRUITER)
 def recruiter_area(request):
-    return render(request, "accounts/recruiter_area.html")
+    new_matches = sum(
+        _new_matches(saved).count() for saved in request.user.saved_searches.all()
+    )
+    return render(
+        request,
+        "accounts/recruiter_area.html",
+        {"new_matches": new_matches},
+    )
 
 
 @role_required(User.Role.ADMINISTRATOR)
@@ -553,3 +562,77 @@ def candidate_search(request):
         "accounts/candidate_search.html",
         {"form": form, "profiles": profiles},
     )
+    
+    
+def _saved_search_matches(saved):
+    form = CandidateSearchForm(saved.criteria())
+    return _filter_candidates(form, _searchable_profiles())
+
+
+def _new_matches(saved):
+    return _saved_search_matches(saved).exclude(pk__in=saved.seen_profiles.all())
+
+
+@role_required(User.Role.RECRUITER)
+@require_POST
+def save_candidate_search(request):
+    form = SavedSearchForm(request.POST)
+
+    if not form.is_valid():
+        messages.error(request, "Give the search a name and at least one filter.")
+        return redirect("accounts:candidate_search")
+
+    saved = form.save(commit=False)
+    saved.recruiter = request.user
+    saved.save()
+    saved.seen_profiles.set(_saved_search_matches(saved))
+
+    messages.success(request, "Search saved. New matching candidates will be flagged here.")
+    return redirect("accounts:saved_searches")
+
+
+@role_required(User.Role.RECRUITER)
+def saved_searches(request):
+    searches = list(request.user.saved_searches.all())
+    for saved in searches:
+        saved.total_count = _saved_search_matches(saved).count()
+        saved.new_count = _new_matches(saved).count()
+
+    return render(
+        request,
+        "accounts/saved_searches.html",
+        {"searches": searches},
+    )
+
+
+@role_required(User.Role.RECRUITER)
+def saved_search_detail(request, pk):
+    saved = get_object_or_404(SavedSearch, pk=pk, recruiter=request.user)
+    new_ids = set(_new_matches(saved).values_list("pk", flat=True))
+    profiles = (
+        _saved_search_matches(saved)
+        .select_related("user")
+        .prefetch_related("projects")
+        .order_by("user__username")
+    )
+    saved.seen_profiles.add(*profiles)
+
+    return render(
+        request,
+        "accounts/candidate_search.html",
+        {
+            "form": CandidateSearchForm(saved.criteria()),
+            "profiles": profiles,
+            "new_ids": new_ids,
+            "saved_search": saved,
+        },
+    )
+
+
+@role_required(User.Role.RECRUITER)
+@require_POST
+def delete_saved_search(request, pk):
+    saved = get_object_or_404(SavedSearch, pk=pk, recruiter=request.user)
+    saved.delete()
+    messages.success(request, "Saved search deleted.")
+    return redirect("accounts:saved_searches")

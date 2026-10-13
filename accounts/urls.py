@@ -120,5 +120,26 @@ urlpatterns = [
     path(
         "candidates/", 
         views.candidate_search, 
-        name="candidate_search"),
+        name="candidate_search"
+    ),
+    path(
+        "candidates/save/",
+         views.save_candidate_search, 
+         name="save_candidate_search"
+    ),
+    path(
+        "candidates/saved/", 
+         views.saved_searches, 
+         name="saved_searches"
+    ),
+    path(
+        "candidates/saved/<int:pk>/", 
+        views.saved_search_detail,
+        name="saved_search_detail"
+    ),
+    path(
+        "candidates/saved/<int:pk>/delete/",
+        views.delete_saved_search,
+        name="delete_saved_search",
+    ),
 ]

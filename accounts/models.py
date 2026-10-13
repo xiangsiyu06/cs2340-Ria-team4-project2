@@ -107,3 +107,34 @@ class Project(models.Model):
 
     def __str__(self):
         return f"{self.title} - {self.profile.user.username}"
+
+    
+class SavedSearch(models.Model):
+    recruiter = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="saved_searches",
+    )
+    name = models.CharField(max_length=100)
+    skills = models.CharField(max_length=500, blank=True)
+    location = models.CharField(max_length=255, blank=True)
+    project = models.CharField(max_length=200, blank=True)
+    seen_profiles = models.ManyToManyField(
+        JobSeekerProfile,
+        blank=True,
+        related_name="+",
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"{self.name} - {self.recruiter.username}"
+
+    def criteria(self):
+        return {
+            "skills": self.skills,
+            "location": self.location,
+            "project": self.project,
+        }

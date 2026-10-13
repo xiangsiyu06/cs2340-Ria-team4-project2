@@ -8,6 +8,7 @@ from .models import (
     Project,
     User,
     WorkExperience,
+    SavedSearch,
 )
 
 
@@ -119,3 +120,15 @@ class CandidateSearchForm(forms.Form):
         label="Project keyword",
         help_text="Matches project titles and descriptions, e.g. React or machine learning",
     )
+
+
+class SavedSearchForm(forms.ModelForm):
+    class Meta:
+        model = SavedSearch
+        fields = ("name", "skills", "location", "project")
+
+    def clean(self):
+        cleaned = super().clean()
+        if not any(cleaned.get(f) for f in ("skills", "location", "project")):
+            raise forms.ValidationError("Add at least one filter before saving a search.")
+        return cleaned
