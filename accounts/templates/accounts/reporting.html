@@ -50,6 +50,18 @@
     </div>
 
     <div class="stack">
+        {% if request.user.role == 'administrator' and request.user.is_active and request.user.is_staff %}
+            {% if perms.accounts.view_user or perms.accounts.change_user %}
+                <article class="card download-panel">
+                    <div>
+                        <span class="badge">Administrator tools</span>
+                        <h2>User management</h2>
+                        <p>Review user accounts, update roles, and activate or deactivate users.</p>
+                    </div>
+                    <a class="button" href="{% url 'accounts:user_management' %}">Manage users</a>
+                </article>
+            {% endif %}
+        {% endif %}
         <article class="card download-panel">
             <div>
                 <span class="badge">CSV</span>

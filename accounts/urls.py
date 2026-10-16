@@ -1,12 +1,16 @@
 from django.contrib.auth import views as auth_views
 from django.urls import path
 
-from . import views
+from . import views, user_management
 
 
 app_name = "accounts"
 
 urlpatterns = [
+    path("users/", user_management.user_management, name="user_management"),
+    path("users/add/", user_management.user_create, name="user_create"),
+    path("users/<int:pk>/edit/", user_management.user_edit, name="user_edit"),
+    path("users/delete/", user_management.user_delete, name="user_delete"),
     path("register/", views.register, name="register"),
     path(
         "registration-complete/",

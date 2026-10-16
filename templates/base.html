@@ -35,6 +35,11 @@
                         <a href="{% url 'accounts:recruiter_area' %}">Recruiter area</a>
                         <a href="{% url 'accounts:candidate_search' %}">Find candidates</a>
                     {% elif request.user.role == 'administrator' %}
+                        {% if request.user.is_active and request.user.is_staff %}
+                            {% if perms.accounts.view_user or perms.accounts.change_user %}
+                                <a href="{% url 'accounts:user_management' %}">User management</a>
+                            {% endif %}
+                        {% endif %}
                         <a href="{% url 'jobs:moderation' %}">Moderation</a>
                         <a href="{% url 'accounts:reporting' %}">Reports</a>
                     {% endif %}

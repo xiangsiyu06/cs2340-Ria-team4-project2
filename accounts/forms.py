@@ -132,3 +132,42 @@ class SavedSearchForm(forms.ModelForm):
         if not any(cleaned.get(f) for f in ("skills", "location", "project")):
             raise forms.ValidationError("Add at least one filter before saving a search.")
         return cleaned
+
+
+class ManagedUserForm(forms.ModelForm):
+    """Only expose account fields that this website is allowed to change."""
+
+    class Meta:
+        model = User
+        fields = ("username", "email", "role", "is_active")
+
+    def __init__(self, *args, actor, **kwargs):
+        super().__init__(*args, **kwargs)
+        protected = self.instance.pk == actor.pk or (
+            self.instance.is_superuser and not actor.is_superuser
+        )
+        if protected:
+            for field in self.fields.values():
+                field.disabled = True
+
+
+class ManagedUserCreationForm(UserCreationForm):
+    class Meta(UserCreationForm.Meta):
+        model = User
+        fields = ("username", "email", "role", "is_active")
+
+
+class ManagedUserRowForm(ManagedUserForm):
+    class Meta(ManagedUserForm.Meta):
+        fields = ("role", "is_active")
+
+
+class ManagedUserFormSet(forms.BaseModelFormSet):
+    def clean(self):
+        super().clean()
+        if any(self.errors):
+            return
+        expected = set(self.get_queryset().values_list("pk", flat=True))
+        submitted = [form.instance.pk for form in self.forms]
+        if len(submitted) != len(expected) or set(submitted) != expected:
+            raise forms.ValidationError("The user list changed. Reload the page and try again.")
