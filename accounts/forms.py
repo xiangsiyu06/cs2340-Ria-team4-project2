@@ -28,7 +28,7 @@ class RegistrationForm(UserCreationForm):
 class JobSeekerProfileForm(forms.ModelForm):
     class Meta:
         model = JobSeekerProfile
-        fields = ("headline", "skills", "location", "recruiter_visible")
+        fields = ("headline", "skills", "location", "lat", "lng", "recruiter_visible")
         labels = {
             "recruiter_visible": "Allow recruiter discovery",
         }
@@ -42,7 +42,19 @@ class JobSeekerProfileForm(forms.ModelForm):
             "location": forms.TextInput(
                 attrs={"placeholder": "e.g. Atlanta, GA"}
             ),
+            # The pin is placed on the map; these inputs carry its coordinates.
+            "lat": forms.HiddenInput(),
+            "lng": forms.HiddenInput(),
         }
+
+    def clean(self):
+        cleaned = super().clean()
+        lat, lng = cleaned.get("lat"), cleaned.get("lng")
+        if (lat is None) != (lng is None):
+            self.add_error("lat", "Pin your location on the map, or clear the pin.")
+        elif lat is not None and not (-90 <= lat <= 90 and -180 <= lng <= 180):
+            self.add_error("lat", "That pin is off the map. Clear it and try again.")
+        return cleaned
 
 
 class EducationForm(forms.ModelForm):

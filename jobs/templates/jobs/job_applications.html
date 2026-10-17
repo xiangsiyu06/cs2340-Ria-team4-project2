@@ -5,7 +5,10 @@
     <p class="eyebrow">Recruiter workspace</p>
     <h1>Applicants for {{ job.title }}</h1>
     <p class="lead">{{ job.company }}</p>
-    <a href="{% url 'jobs:mine' %}">Back to my jobs</a>
+    <div class="actions">
+        <a class="button button--secondary" href="{% url 'jobs:applicant_map' job.pk %}">View applicants on map</a>
+        <a href="{% url 'jobs:mine' %}">Back to my jobs</a>
+    </div>
 </header>
 {% if job.status == 'removed' %}
     <p class="alert">This job has been removed. Existing applications are still available for review.</p>
