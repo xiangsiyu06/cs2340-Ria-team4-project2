@@ -34,7 +34,17 @@
             (<a href="{% url 'jobs:search' %}{% if request.GET %}?{{ request.GET.urlencode }}{% endif %}">see the list</a>)
         {% endif %}
     </p>
-    <button class="button button--secondary button--small" type="button" data-locate>Show my location</button>
+    <div class="map-toolbar__controls">
+        <label for="radius">Distance from me</label>
+        <select class="radius-select" id="radius" data-radius>
+            <option value="">Any distance</option>
+            <option value="5">Within 5 miles</option>
+            <option value="10">Within 10 miles</option>
+            <option value="25">Within 25 miles</option>
+            <option value="50">Within 50 miles</option>
+        </select>
+        <button class="button button--secondary button--small" type="button" data-locate>Show my location</button>
+    </div>
 </div>
 <p class="location-card__message" data-locate-message aria-live="polite" hidden></p>
 
@@ -58,6 +68,7 @@
         {% empty %}
             <li class="job-list__empty">No pinned jobs match these filters.</li>
         {% endfor %}
+        <li class="job-list__empty" data-radius-empty hidden>No pinned jobs within this distance of you. Try a larger distance.</li>
     </ol>
 </div>
 
@@ -65,5 +76,5 @@
 {% endblock %}
 
 {% block extra_body %}
-<script defer src="{% static 'js/job_map.js' %}?v=20260927-1"></script>
+<script defer src="{% static 'js/job_map.js' %}?v=20261016-1"></script>
 {% endblock %}
