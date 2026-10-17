@@ -3,12 +3,15 @@ from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied
 from django.core.paginator import Paginator
 from django.db.models import Q
+from django.http import Http404
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.views.decorators.http import require_GET, require_http_methods
 
 from accounts.decorators import role_required
-from accounts.models import User
+from accounts.models import JobSeekerProfile, User
+from accounts.permissions import can_view_profile
+from communications.models import Conversation
 from jobs.models import Job
 from .forms import ReportForm, ReportReviewForm
 from .models import Report
@@ -16,10 +19,33 @@ from .models import Report
 admin_required = role_required(User.Role.ADMINISTRATOR)
 
 
+def _can_report_user(reporter, target):
+    if target.role != User.Role.JOB_SEEKER or reporter.role == User.Role.ADMINISTRATOR:
+        return True
+    profile = JobSeekerProfile.objects.filter(user=target).first()
+    if can_view_profile(reporter, profile):
+        return True
+    return (
+        target.applications.filter(job__recruiter=reporter).exists()
+        or Conversation.objects.filter(recruiter=reporter, candidate=target).exists()
+    )
+
+
 def _submit(request, target, target_type):
     form = ReportForm(request.POST if request.method == "POST" else None)
     label = str(target)
     if request.method == "POST" and form.is_valid():
+        open_reports = Report.objects.filter(
+            reporter=request.user,
+            status__in=[Report.Status.PENDING, Report.Status.INVESTIGATING],
+        )
+        if target_type == Report.TargetType.JOB:
+            open_reports = open_reports.filter(reported_job=target)
+        else:
+            open_reports = open_reports.filter(reported_user=target)
+        if open_reports.exists():
+            messages.info(request, "You already reported this. An administrator will review it.")
+            return redirect("reports:submitted")
         report = form.save(commit=False)
         report.reporter = request.user
         report.target_type = target_type
@@ -59,6 +85,8 @@ def report_user(request, pk):
     user = get_object_or_404(User, pk=pk, is_active=True)
     if user == request.user:
         raise PermissionDenied("You cannot report your own account.")
+    if not _can_report_user(request.user, user):
+        raise Http404
     return _submit(request, user, Report.TargetType.USER)
 
 
