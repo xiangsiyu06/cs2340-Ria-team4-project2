@@ -34,6 +34,12 @@
                     {% endif %}
                     {% if job.visa_sponsorship %} - Visa sponsorship{% endif %}
                 </span>
+                {% if request.user.role == 'job_seeker' %}
+                    <form method="post" action="{% url 'jobs:cart_add' job.pk %}">
+                        {% csrf_token %}
+                        <button class="button button--secondary button--small" type="submit">Add to job cart</button>
+                    </form>
+                {% endif %}
             </li>
         {% endfor %}
         </ul>

@@ -4,6 +4,7 @@
 
 {% block content %}
 <h1>My jobs</h1>
+<p><a class="button button--secondary" href="{% url 'jobs:pipeline' %}">Hiring pipeline</a></p>
 <a class="button" href="{% url 'jobs:create' %}">Post a job</a>
 
 {% if jobs %}

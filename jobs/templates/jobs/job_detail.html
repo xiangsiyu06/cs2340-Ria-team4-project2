@@ -44,6 +44,10 @@
 {% endif %}
 
 {% if request.user.is_authenticated and request.user.role == 'job_seeker' %}
+    <form method="post" action="{% url 'jobs:cart_add' job.pk %}">
+        {% csrf_token %}
+        <p><button class="button button--secondary" type="submit">Add to job cart</button></p>
+    </form>
     <section class="card" aria-labelledby="application-heading">
         {% if application %}
             <h2 id="application-heading">Application submitted</h2>
@@ -66,5 +70,8 @@
     </section>
 {% elif not request.user.is_authenticated %}
     <p><a class="button" href="{% url 'accounts:login' %}?next={{ request.path|urlencode }}">Log in to apply</a></p>
+{% endif %}
+{% if request.user.is_authenticated and job.status == 'active' %}
+    <p><a href="{% url 'reports:job' job.pk %}">Report this job</a>{% if request.user.pk != job.recruiter_id and job.recruiter.is_active %} &middot; <a href="{% url 'reports:user' job.recruiter_id %}">Report posting account</a>{% endif %}</p>
 {% endif %}
 {% endblock %}

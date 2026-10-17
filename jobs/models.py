@@ -86,3 +86,20 @@ class Application(models.Model):
 
     def __str__(self):
         return f"{self.applicant} applied to {self.job}"
+
+
+class CartItem(models.Model):
+    owner = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="job_cart_items"
+    )
+    job = models.ForeignKey(Job, on_delete=models.CASCADE, related_name="cart_items")
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-created_at", "-pk"]
+        constraints = [
+            models.UniqueConstraint(fields=["owner", "job"], name="unique_job_cart_item"),
+        ]
+
+    def __str__(self):
+        return f"{self.owner} saved {self.job}"

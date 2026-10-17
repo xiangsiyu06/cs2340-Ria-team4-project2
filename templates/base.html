@@ -27,12 +27,14 @@
                     <a href="{% url 'accounts:dashboard' %}">Dashboard</a>
                     {% if request.user.role == 'job_seeker' %}
                         <a href="{% url 'jobs:search' %}">Find jobs</a>
+                        <a href="{% url 'jobs:cart' %}">Job cart</a>
                         <a href="{% url 'jobs:map' %}">Job map</a>
                         <a href="{% url 'communications:inbox' %}">Messages</a>
                         <a href="{% url 'accounts:job_seeker_area' %}">Job seeker area</a>
                     {% elif request.user.role == 'recruiter' %}
                         <a href="{% url 'communications:inbox' %}">Messages</a>
                         <a href="{% url 'accounts:recruiter_area' %}">Recruiter area</a>
+                        <a href="{% url 'jobs:pipeline' %}">Hiring pipeline</a>
                         <a href="{% url 'accounts:candidate_search' %}">Find candidates</a>
                     {% elif request.user.role == 'administrator' %}
                         {% if request.user.is_active and request.user.is_staff %}
@@ -42,6 +44,7 @@
                         {% endif %}
                         <a href="{% url 'jobs:moderation' %}">Moderation</a>
                         <a href="{% url 'accounts:reporting' %}">Reports</a>
+                        <a href="{% url 'reports:list' %}">Content reports</a>
                     {% endif %}
                     <form method="post" action="{% url 'accounts:logout' %}">
                         {% csrf_token %}

@@ -1,9 +1,16 @@
 from django.urls import path
 from . import views
+from . import cart_views, pipeline_views
 
 app_name = "jobs"
 
 urlpatterns = [
+    path("cart/", cart_views.cart, name="cart"),
+    path("cart/compare/", cart_views.cart_compare, name="cart_compare"),
+    path("cart/add/<int:pk>/", cart_views.cart_add, name="cart_add"),
+    path("cart/remove/<int:pk>/", cart_views.cart_remove, name="cart_remove"),
+    path("pipeline/", pipeline_views.pipeline, name="pipeline"),
+    path("pipeline/<int:pk>/move/", pipeline_views.pipeline_move, name="pipeline_move"),
     path("applications/", views.my_applications, name="my_applications"),
     path("<int:pk>/applications/", views.job_applications, name="job_applications"),
     path("<int:pk>/applications/map/", views.applicant_map, name="applicant_map"),

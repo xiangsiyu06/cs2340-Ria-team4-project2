@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     "accounts.apps.AccountsConfig",
     "jobs",
     "communications.apps.CommunicationsConfig",
+    "reports.apps.ReportsConfig",
 ]
 
 AUTH_USER_MODEL = "accounts.User"
