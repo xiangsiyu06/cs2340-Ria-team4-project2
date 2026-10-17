@@ -87,3 +87,24 @@ class JobSearchForm(forms.Form):
         if lo is not None and hi is not None and lo > hi:
             self.add_error("salary_max", "Max salary must be at least min salary.")
         return cleaned
+
+
+class CommuteRadiusForm(forms.Form):
+    """The distance choices on the job map; saving one makes it the commute radius."""
+
+    CHOICES = [
+        ("", "Any distance"),
+        (5, "Within 5 miles"),
+        (10, "Within 10 miles"),
+        (25, "Within 25 miles"),
+        (50, "Within 50 miles"),
+    ]
+
+    radius = forms.TypedChoiceField(
+        choices=CHOICES,
+        coerce=int,
+        required=False,
+        empty_value=None,
+        label="Distance from me",
+        widget=forms.Select(attrs={"class": "radius-select", "data-radius": ""}),
+    )

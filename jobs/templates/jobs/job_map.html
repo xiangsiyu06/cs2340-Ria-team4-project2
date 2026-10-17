@@ -33,18 +33,19 @@
             &middot; {{ unpinned_count }} matching job{{ unpinned_count|pluralize }} {{ unpinned_count|pluralize:"has,have" }} no office location
             (<a href="{% url 'jobs:search' %}{% if request.GET %}?{{ request.GET.urlencode }}{% endif %}">see the list</a>)
         {% endif %}
+        {% if commute_radius %}
+            &middot; Your commute radius is {{ commute_radius }} miles
+        {% endif %}
     </p>
-    <div class="map-toolbar__controls">
-        <label for="radius">Distance from me</label>
-        <select class="radius-select" id="radius" data-radius>
-            <option value="">Any distance</option>
-            <option value="5">Within 5 miles</option>
-            <option value="10">Within 10 miles</option>
-            <option value="25">Within 25 miles</option>
-            <option value="50">Within 50 miles</option>
-        </select>
+    <form class="map-toolbar__controls" method="post" action="{% url 'jobs:commute_radius' %}{% if request.GET %}?{{ request.GET.urlencode }}{% endif %}">
+        {% csrf_token %}
+        <label for="{{ radius_form.radius.id_for_label }}">{{ radius_form.radius.label }}</label>
+        {{ radius_form.radius }}
         <button class="button button--secondary button--small" type="button" data-locate>Show my location</button>
-    </div>
+        {% if request.user.role == 'job_seeker' %}
+            <button class="button button--ghost button--small" type="submit">Save as my commute radius</button>
+        {% endif %}
+    </form>
 </div>
 <p class="location-card__message" data-locate-message aria-live="polite" hidden></p>
 
@@ -76,5 +77,5 @@
 {% endblock %}
 
 {% block extra_body %}
-<script defer src="{% static 'js/job_map.js' %}?v=20261016-1"></script>
+<script defer src="{% static 'js/job_map.js' %}?v=20261016-2"></script>
 {% endblock %}
