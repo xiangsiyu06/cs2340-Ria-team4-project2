@@ -239,6 +239,7 @@ PROJECT_IMPLEMENTATION_GUIDE.md
 # Local analysis and preview artifacts
 tmp/
 graphify-out/
+.smtp-password*
 
 # Local editor settings
 .vscode/

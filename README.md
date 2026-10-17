@@ -216,6 +216,7 @@ ProjectTwo/
 - Message senders and recipients are derived on the server rather than trusted from form data.
 - Recruiters may contact discoverable candidates, their own applicants, or candidates with an existing conversation.
 - Candidate email outreach uses a configured platform SMTP account, with the recruiter's account email as Reply-To. See [messaging and email setup](docs/us14-us15.md).
+- The default sender is `careerbridgemessage@gmail.com`. Run `python manage.py configure_email` once on the demo machine or hosted server to privately enter and verify its Google app password, then restart/reload the app.
 - Removed jobs are hidden from ordinary users but remain visible to their recruiter and administrators.
 - State-changing actions such as logout, job applications, removal, and restoration use POST requests.
 - CSV exports omit application notes and escape formula-like text to reduce spreadsheet-injection risk.

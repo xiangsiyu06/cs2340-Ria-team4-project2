@@ -171,8 +171,11 @@ def email_candidate(request, candidate_pk):
             break
     if (
         not delivery_issue
-        and not settings.EMAIL_HOST
         and settings.EMAIL_BACKEND == "django.core.mail.backends.smtp.EmailBackend"
+        and (
+            not settings.EMAIL_HOST
+            or (settings.EMAIL_HOST_USER and not settings.EMAIL_HOST_PASSWORD)
+        )
     ):
         delivery_issue = "Email delivery is not configured. Contact an administrator or use platform messaging."
 

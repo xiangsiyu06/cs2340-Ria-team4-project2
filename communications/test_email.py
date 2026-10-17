@@ -163,10 +163,14 @@ class CandidateContactTests(TestCase):
             user.save(update_fields=["email"])
         self.assertFalse(mail.outbox)
 
-    def test_unconfigured_sender_or_smtp_host_prevents_sending(self):
+    def test_unconfigured_sender_host_or_password_prevents_sending(self):
         for overrides in (
             {"DEFAULT_FROM_EMAIL": ""},
             {"EMAIL_BACKEND": "django.core.mail.backends.smtp.EmailBackend", "EMAIL_HOST": ""},
+            {
+                "EMAIL_BACKEND": "django.core.mail.backends.smtp.EmailBackend",
+                "EMAIL_HOST_USER": "careerbridgemessage@gmail.com", "EMAIL_HOST_PASSWORD": "",
+            },
         ):
             with self.subTest(overrides=overrides), override_settings(**overrides):
                 response = self.client.post(self.url, self.draft)
