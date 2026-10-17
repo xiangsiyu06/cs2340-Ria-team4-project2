@@ -1,5 +1,6 @@
 // Lets job seekers browse pinned jobs on a map and locate them from the list (US7),
-// and hide jobs farther than a chosen distance from where they are (US8).
+// hide jobs farther than a chosen distance from where they are (US8),
+// and start from their saved commute radius (US9).
 (function () {
     "use strict";
 
@@ -292,4 +293,9 @@
             applyRadius();
         }
     });
+
+    // A saved commute radius is preselected by the server, so apply it straight away.
+    if (chosenRadius()) {
+        locate();
+    }
 })();

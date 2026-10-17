@@ -11,6 +11,7 @@ urlpatterns = [
     path("new/", views.job_create, name="create"),
     path("mine/", views.my_jobs, name="mine"),
     path("map/", views.job_map, name="map"),
+    path("map/commute-radius/", views.commute_radius, name="commute_radius"),
     path("<int:pk>/", views.job_detail, name="detail"),
     path("<int:pk>/apply/", views.job_apply, name="apply"),
     path("<int:pk>/edit/", views.job_edit, name="edit"),

@@ -35,6 +35,11 @@ class JobSeekerProfile(models.Model):
     location = models.CharField(max_length=255, blank=True)
     lat = models.FloatField(null=True, blank=True)
     lng = models.FloatField(null=True, blank=True)
+    commute_radius = models.PositiveIntegerField(
+        null=True,
+        blank=True,
+        help_text="Preferred commute radius in miles; the job map applies it automatically.",
+    )
     recruiter_visible = models.BooleanField(
         default=False,
         help_text=(

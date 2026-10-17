@@ -10,7 +10,13 @@ from django.views.decorators.http import require_POST
 from .recommendations import recommend_candidates, recommend_jobs
 from accounts.decorators import role_required
 from accounts.models import JobSeekerProfile, User
-from .forms import ApplicationForm, ApplicationStatusForm, JobForm, JobSearchForm
+from .forms import (
+    ApplicationForm,
+    ApplicationStatusForm,
+    CommuteRadiusForm,
+    JobForm,
+    JobSearchForm,
+)
 from .models import Application, Job
 
 recruiter_required = role_required(User.Role.RECRUITER)
@@ -292,11 +298,34 @@ def job_map(request):
         }
         for job in pinned
     ]
+    profile = JobSeekerProfile.objects.filter(user=request.user).first()
+    commute_radius = profile.commute_radius if profile else None
     return render(request, "jobs/job_map.html", {
         "form": form,
         "markers": markers,
         "unpinned_count": jobs.count() - len(markers),
+        "radius_form": CommuteRadiusForm(initial={"radius": commute_radius}),
+        "commute_radius": commute_radius,
     })
+
+
+@role_required(User.Role.JOB_SEEKER)
+@require_POST
+def commute_radius(request):
+    form = CommuteRadiusForm(request.POST)
+    if form.is_valid():
+        profile, _ = JobSeekerProfile.objects.get_or_create(user=request.user)
+        profile.commute_radius = form.cleaned_data["radius"]
+        profile.save(update_fields=["commute_radius"])
+        if profile.commute_radius:
+            messages.success(request, f"Your commute radius is now {profile.commute_radius} miles.")
+        else:
+            messages.success(request, "Your commute radius has been cleared.")
+    else:
+        messages.error(request, "Pick one of the listed distances.")
+    # Send the job seeker back to the map with the same search filters.
+    query = request.META.get("QUERY_STRING", "")
+    return redirect(reverse("jobs:map") + ("?" + query if query else ""))
 
 
 @admin_required
