@@ -42,6 +42,10 @@
                 {{ profile.user.username }}
                 {% if profile.pk in new_ids %}<span class="badge badge--accent">New</span>{% endif %}
             </h2>
+            <div class="actions">
+                <a class="button button--secondary" href="{% url 'communications:start' profile.user.pk %}">Message candidate</a>
+                <a href="{% url 'communications:email' profile.user.pk %}">Email candidate</a>
+            </div>
             {% if profile.headline %}<p>{{ profile.headline }}</p>{% endif %}
             {% if profile.location %}<p class="text-muted">{{ profile.location }}</p>{% endif %}
 

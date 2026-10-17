@@ -20,3 +20,20 @@ class MessageForm(forms.ModelForm):
     class Meta:
         model = Message
         fields = ["body"]
+
+
+class CandidateEmailForm(forms.Form):
+    subject = forms.CharField(max_length=200, strip=True)
+    body = forms.CharField(
+        label="Email message",
+        max_length=10000,
+        strip=True,
+        help_text="Up to 10,000 characters. Sent as plain text.",
+        widget=forms.Textarea(attrs={"rows": 8}),
+    )
+
+    def clean_subject(self):
+        subject = self.cleaned_data["subject"]
+        if "\r" in subject or "\n" in subject:
+            raise forms.ValidationError("Use a single line for the subject.")
+        return subject

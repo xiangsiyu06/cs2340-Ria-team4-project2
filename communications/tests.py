@@ -3,7 +3,7 @@ from django.db import IntegrityError, transaction
 from django.test import Client, TestCase
 from django.urls import reverse
 
-from accounts.models import User
+from accounts.models import JobSeekerProfile, User
 from jobs.models import Application, Job
 
 from .models import Conversation, Message
@@ -21,6 +21,10 @@ class MessagingTests(TestCase):
         cls.other_candidate = User.objects.create_user(
             username="other-candidate",
             role=User.Role.JOB_SEEKER,
+        )
+        JobSeekerProfile.objects.create(
+            user=cls.other_candidate,
+            recruiter_visible=True,
         )
         cls.recruiter = User.objects.create_user(
             username="recruiter",

@@ -185,6 +185,7 @@ Django's `is_staff`/`is_superuser` flags control access to Django Admin, while t
 | `/jobs/mine/` | View owned job postings | Recruiter |
 | `/jobs/moderation/` | Remove or restore job postings | Administrator |
 | `/messages/` | View private recruiter-candidate conversations | Job seeker or recruiter |
+| `/messages/candidates/<id>/email/` | Compose and send an email to a candidate | Recruiter |
 | `/accounts/reports/` | View metrics and download CSV reports | Administrator |
 | `/admin/` | Manage users and Django data | Staff users |
 
@@ -213,6 +214,8 @@ ProjectTwo/
 - Recruiters can edit only jobs they own.
 - Only a conversation's recruiter and candidate can read or send its messages.
 - Message senders and recipients are derived on the server rather than trusted from form data.
+- Recruiters may contact discoverable candidates, their own applicants, or candidates with an existing conversation.
+- Candidate email outreach uses a configured platform SMTP account, with the recruiter's account email as Reply-To. See [messaging and email setup](docs/us14-us15.md).
 - Removed jobs are hidden from ordinary users but remain visible to their recruiter and administrators.
 - State-changing actions such as logout, job applications, removal, and restoration use POST requests.
 - CSV exports omit application notes and escape formula-like text to reduce spreadsheet-injection risk.

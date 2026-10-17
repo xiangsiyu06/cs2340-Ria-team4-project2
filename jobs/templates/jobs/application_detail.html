@@ -7,6 +7,7 @@
     <p class="lead">Application for {{ application.job.title }} at {{ application.job.company }}</p>
     <div class="actions">
         <a class="button" href="{% url 'communications:start' application.applicant.pk %}">Message candidate</a>
+        <a class="button button--secondary" href="{% url 'communications:email' application.applicant.pk %}">Email candidate</a>
         <a href="{% url 'jobs:job_applications' application.job.pk %}">Back to applicants</a>
         <a href="{% url 'jobs:pipeline' %}?job={{ application.job.pk }}">Hiring pipeline</a>
         <a href="{% url 'reports:user' application.applicant_id %}">Report candidate</a>

@@ -11,6 +11,9 @@
         </p>
     </div>
     <a href="{% url 'communications:inbox' %}">Back to messages</a>
+    {% if request.user.role == 'recruiter' %}
+        <a href="{% url 'communications:email' other_user.pk %}">Email candidate</a>
+    {% endif %}
     <a href="{% url 'reports:user' other_user.pk %}">Report this user</a>
 </header>
 
