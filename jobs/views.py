@@ -1,4 +1,5 @@
 import re
+from collections import Counter
 from accounts.permissions import can_view_profile
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
@@ -90,6 +91,34 @@ def my_applications(request):
         .order_by("-created_at", "-pk")
     )
     return render(request, "jobs/my_applications.html", {"applications": applications})
+
+
+@recruiter_required
+def applicant_map(request, pk):
+    """Show the recruiter where this job's applicants are based (US19)."""
+    job = get_object_or_404(Job, pk=pk, recruiter=request.user)
+    applications = job.applications.select_related("applicant__job_seeker_profile")
+    points = []
+    places = Counter()
+    for application in applications:
+        profile = getattr(application.applicant, "job_seeker_profile", None)
+        location = profile.location.strip() if profile else ""
+        places[location or "Location not given"] += 1
+        if profile and profile.lat is not None and profile.lng is not None:
+            points.append({
+                "name": application.applicant.get_full_name() or application.applicant.username,
+                "location": location,
+                "status": application.get_status_display(),
+                "lat": profile.lat,
+                "lng": profile.lng,
+                "url": reverse("jobs:application_detail", args=[application.pk]),
+            })
+    return render(request, "jobs/applicant_map.html", {
+        "job": job,
+        "points": points,
+        "total": len(applications),
+        "places": places.most_common(),
+    })
 
 
 @recruiter_required

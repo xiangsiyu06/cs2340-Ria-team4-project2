@@ -1,4 +1,5 @@
-// Lets a recruiter pin the job's office location on the job form (US18).
+// Lets a recruiter pin the job's office location on the job form (US18),
+// and a job seeker pin their own location on the profile form (US19).
 (function () {
     "use strict";
 
@@ -57,7 +58,7 @@
         latInput.value = point.lat.toFixed(6);
         lngInput.value = point.lng.toFixed(6);
         if (!marker) {
-            const pin = Maps.pinElement("div", "Office location pin");
+            const pin = Maps.pinElement("div", root.dataset.pinLabel || "Location pin");
             pin.classList.add("pin--draggable");
             marker = new maplibregl.Marker({ element: pin, anchor: "bottom", draggable: true })
                 .setLngLat(point)
