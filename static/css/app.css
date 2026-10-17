@@ -927,6 +927,31 @@ a:focus-visible {
     margin: 0;
 }
 
+.map-toolbar__controls {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-2);
+}
+
+.map-toolbar__controls label {
+    font-weight: 750;
+}
+
+.radius-select {
+    min-height: 2.3rem;
+    padding: 0.35rem 0.6rem;
+    color: var(--color-ink);
+    background: var(--color-surface);
+    border: 1px solid #9cb0bb;
+    border-radius: var(--radius-sm);
+}
+
+.radius-select:focus-visible {
+    outline: 3px solid rgb(244 185 66 / 65%);
+    outline-offset: 2px;
+}
+
 .map-toolbar + .location-card__message {
     margin: 0 0 var(--space-2);
 }
